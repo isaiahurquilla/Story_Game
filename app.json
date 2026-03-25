@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme": "storygame", 
     "name": "Story_Game",
     "slug": "Story_Game",
     "version": "1.0.0",
@@ -24,6 +25,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
