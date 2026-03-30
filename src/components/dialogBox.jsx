@@ -7,18 +7,39 @@ import DialogBox from '../components/DialogBox'
 
 import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 //import Colors from "../constants/Colors";
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming, 
+  withSpring 
+} from 'react-native-reanimated';
 
+const AnimatedText = Animated.createAnimatedComponent(Text);
 
 const DialogBox = ({ style, charaname, txt, ...props }) => {
   //const colorScheme = useColorScheme();
   //const theme = Colors[colorScheme] ?? Colors.light;
 
+const opacity = useSharedValue(0);
+
+const animatedStyle = useAnimatedStyle(() => {
+  return {
+    opacity: opacity.value,
+  };
+});
+
+useEffect(() => {
+  opacity.value = withTiming(1, { duration: 500 });
+}, []);
+
+  // sets invisible on click
   const [visable, setVisable] = useState(true)
     const handlePress = () => {
       setVisable(false)
     }
   
+  // only returns if visible 
   if (!visable) {
     return null;
   }
@@ -35,7 +56,7 @@ const DialogBox = ({ style, charaname, txt, ...props }) => {
         ]}
         {...props}
       >
-        <Text>{txt}</Text>
+        <AnimatedText style={[animatedStyle]}>{txt}</AnimatedText>
       </View>
       </Pressable>
     </View>
