@@ -1,19 +1,30 @@
 /*
-Call this function using 
+Call this function from index/another page using 
 import DialogBox from '../components/DialogBox'
 
 <DialogBox charaname='NPC name here' txt='speech goes here'></DialogBox>
 */
 
-import { StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 //import Colors from "../constants/Colors";
+import { useState } from 'react'
+
 
 const DialogBox = ({ style, charaname, txt, ...props }) => {
   //const colorScheme = useColorScheme();
   //const theme = Colors[colorScheme] ?? Colors.light;
+
+  const [visable, setVisable] = useState(true)
+    const handlePress = () => {
+      setVisable(false)
+    }
   
+  if (!visable) {
+    return null;
+  }
   return (
     <View style={{ alignItems: 'center', marginBottom: 20 }}>
+      <Pressable onPress={handlePress}>
       <Text style={styles.heading}>
         {charaname}
       </Text>
@@ -26,6 +37,7 @@ const DialogBox = ({ style, charaname, txt, ...props }) => {
       >
         <Text>{txt}</Text>
       </View>
+      </Pressable>
     </View>
   );
 };
