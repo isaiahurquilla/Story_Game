@@ -1,18 +1,21 @@
+/*
+Call this function using 
+import DialogBox from '../components/DialogBox'
+
+<DialogBox charaname='NPC name here' txt='speech goes here'></DialogBox>
+*/
+
 import { StyleSheet, Text, View, useColorScheme } from 'react-native';
 //import Colors from "../constants/Colors";
 
-/*
-Call this function using 
-*/
-
-const TitleCard = ({ style, charaName, txt, ...props }) => {
+const DialogBox = ({ style, charaname, txt, ...props }) => {
   //const colorScheme = useColorScheme();
   //const theme = Colors[colorScheme] ?? Colors.light;
   
   return (
     <View style={{ alignItems: 'center', marginBottom: 20 }}>
       <Text style={styles.heading}>
-        {charaName}
+        {charaname}
       </Text>
       <View 
         style={[
@@ -27,7 +30,7 @@ const TitleCard = ({ style, charaName, txt, ...props }) => {
   );
 };
 
-export default TitleCard;
+export default DialogBox;
 
 const styles = StyleSheet.create({
     card: {
@@ -46,8 +49,9 @@ const styles = StyleSheet.create({
       fontWeight: "bold", 
       fontSize: 24,
       textAlign: 'left',
+      alignItems: 'left',
       marginBottom: 10,
-      color: "white",
+      color: "black",
       
     },
 });
