@@ -1,37 +1,34 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const PROFILE_KEY = '@user_profile';
+const PROFILES_KEY = '@profiles_list';
 
-// Saves the profile
+// Saves a new profile to the existing list
 export const saveProfile = async (name) => {
   try {
-    const newProfile = { name, createdAt: new Date().toISOString() };
-    const jsonValue = JSON.stringify(newProfile);
-    await AsyncStorage.setItem(PROFILE_KEY, jsonValue);
-    return newProfile;
+    const existingProfiles = await loadProfiles();
+    const newProfile = { 
+      id: Date.now().toString(), // Unique ID for lists
+      name, 
+      createdAt: new Date().toISOString() 
+    };
+    
+    const updatedList = [...existingProfiles, newProfile];
+    await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(updatedList));
+    
+    return updatedList;
   } catch (e) {
     console.error("Error saving profile", e);
-    return null;
+    return [];
   }
 };
 
-// Loads the profile
-export const loadProfile = async () => {
+// Load the entire list of profiles
+export const loadProfiles = async () => {
   try {
-    const jsonValue = await AsyncStorage.getItem(PROFILE_KEY);
-    return jsonValue != null ? JSON.parse(jsonValue) : null;
+    const jsonValue = await AsyncStorage.getItem(PROFILES_KEY);
+    return jsonValue != null ? JSON.parse(jsonValue) : [];
   } catch (e) {
-    console.error("Error loading profile", e);
-    return null;
-  }
-};
-
-// Clear profile (for testing)
-export const clearProfile = async () => {
-  try {
-    await AsyncStorage.removeItem(PROFILE_KEY);
-  } catch (e) {
-    console.error("Error clearing profile", e);
+    console.error("Error loading profiles", e);
+    return [];
   }
 };
