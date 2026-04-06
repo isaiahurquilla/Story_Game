@@ -17,7 +17,7 @@ import Animated, {
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
-const DialogBox = ({ style, charaname, txt, ...props }) => {
+const DialogBox = ({ style, charaname, txt, speed = 60, ...props }) => {
   //const colorScheme = useColorScheme();
   //const theme = Colors[colorScheme] ?? Colors.light;
 
@@ -29,9 +29,21 @@ const animatedStyle = useAnimatedStyle(() => {
   };
 });
 
+const [displayedText, setDisplayedText] = useState('');
+const [currentIndex, setCurrentIndex] = useState(0);
+
+
 useEffect(() => {
-  opacity.value = withTiming(1, { duration: 500 });
-}, []);
+  opacity.value = withTiming(1, { duration: 1000 });
+  if (currentIndex < txt.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedText((prev) => prev + txt[currentIndex]);
+        setCurrentIndex((prev) => prev + 1);
+      }, speed);
+
+      return () => clearTimeout(timeout); 
+    }
+  }, [currentIndex, txt, speed]);
 
   // sets invisible on click
   const [visable, setVisable] = useState(true)
@@ -56,7 +68,7 @@ useEffect(() => {
         ]}
         {...props}
       >
-        <AnimatedText style={[animatedStyle]}>{txt}</AnimatedText>
+        <AnimatedText style={[animatedStyle]}>{displayedText}</AnimatedText>
       </View>
       </Pressable>
     </View>
