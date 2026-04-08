@@ -17,7 +17,7 @@ import Animated, {
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
-const DialogBox = ({ style, charaname, txt, speed = 60, ...props }) => {
+const DialogBox = ({ style, charaname, txt, speed = 60, onPress, ...props }) => {
   //const colorScheme = useColorScheme();
   //const theme = Colors[colorScheme] ?? Colors.light;
 
@@ -43,13 +43,26 @@ useEffect(() => {
 
       return () => clearTimeout(timeout); 
     }
-  }, [currentIndex, txt, speed]);
+  }, [currentIndex, speed]);
+
+useEffect(() => {
+  setDisplayedText('');
+  setCurrentIndex(0);
+}, [txt]);
 
   // sets invisible on click
   const [visable, setVisable] = useState(true)
-    const handlePress = () => {
-      setVisable(false)
-    }
+
+  const handlePress = () => {
+  // If the typewriter is still going, maybe "skip" to the end?
+  if (currentIndex < txt.length) {
+    setDisplayedText(txt);
+    setCurrentIndex(txt.length);
+  } else {
+    // If text is finished, tell the parent to move to the next box
+    if (onPress) onPress(); 
+  }
+};
   
   // only returns if visible 
   if (!visable) {
