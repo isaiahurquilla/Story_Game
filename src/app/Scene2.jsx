@@ -1,11 +1,59 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import DialogBox from '../components/DialogBox';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import DialogBox from '../components/dialogBox';
 import PlayerChoice from '../components/PlayerChoice'; 
 import scene2 from '../assets/scene2.json';
+import { loadGameForProfile, saveGameForProfile } from '../services/profileService';
+
+const DEFAULT_NODE = 'start';
 
 const Scene2 = () => {
-  const [currentNode, setCurrentNode] = useState("start");
+  const router = useRouter();
+  const { profileId, mode } = useLocalSearchParams();
+  const selectedProfileId = Array.isArray(profileId) ? profileId[0] : profileId;
+
+  const [currentNode, setCurrentNode] = useState(DEFAULT_NODE);
+  const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+    const setupScene = async () => {
+      if (!selectedProfileId) {
+        setReady(true);
+        return;
+      }
+
+      if (mode === 'load') {
+        const savedGame = await loadGameForProfile(selectedProfileId);
+
+        if (savedGame?.sceneId === 'Scene2' && scene2[savedGame.currentNode]) {
+          setCurrentNode(savedGame.currentNode);
+        } else {
+          setCurrentNode(DEFAULT_NODE);
+        }
+      } else {
+        setCurrentNode(DEFAULT_NODE);
+      }
+
+      setReady(true);
+    };
+
+    setupScene();
+  }, [selectedProfileId, mode]);
+
+  useEffect(() => {
+    if (!ready || !selectedProfileId || !scene2[currentNode]) return;
+
+    saveGameForProfile(selectedProfileId, {
+      sceneId: 'Scene2',
+      currentNode,
+    });
+  }, [currentNode, ready, selectedProfileId]);
+
+  if (!ready) {
+    return <View style={styles.container} />;
+  }
+
   const data = scene2[currentNode];
 
   // error if json doesn't exist
@@ -26,6 +74,15 @@ const Scene2 = () => {
     }
   };
 
+const goToMainMenu = () => {
+    router.replace({
+      pathname: '/menu',
+      params: { profileId: selectedProfileId },
+    });
+  };
+
+const isSceneOver = !data.choices && !data.next;
+
   return (
     <View style={styles.container}>
       <DialogBox 
@@ -40,6 +97,11 @@ const Scene2 = () => {
           onSelect={handleSelect} 
         />
       )}
+      {isSceneOver && (
+        <TouchableOpacity style = {styles.menuButton} onPress={goToMainMenu}>
+          <Text style={styles.menuButtonText}>Go to Main Menu</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -49,7 +111,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: 'center',
-    flexWrap: true,
+    flexWrap: 'true',
   },
 });
 
