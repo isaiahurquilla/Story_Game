@@ -1,0 +1,17 @@
+{
+  "fox": {
+    "name": "Fox",
+    "voice": "voice.ogg",
+    "portrait": "image.png",
+  },
+  "wolf": {
+    "name": "Wolf",
+    "voice": "voice2.ogg",
+    "portrait": "image2.png",
+  },
+  "hare": {
+    "name": "Hare",
+    "voice": "voice3.ogg",
+    "portrait": "image3.png",
+  },
+}
