@@ -2,16 +2,16 @@
   "fox": {
     "name": "Fox",
     "voice": "voice.ogg",
-    "portrait": "image.png"
+    "portrait": "fox_image"
   },
   "wolf": {
     "name": "Wolf",
     "voice": "voice2.ogg",
-    "portrait": "image2.png"
+    "portrait": "wolf_image"
   },
   "hare": {
     "name": "Hare",
     "voice": "voice3.ogg",
-    "portrait": "image3.png"
+    "portrait": "hare_image"
   }
 }
