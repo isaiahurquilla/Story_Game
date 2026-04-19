@@ -17,10 +17,10 @@ import Animated, {
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
-const DialogBox = ({ style, charaname, txt, speed = 60, onPress, ...props }) => {
+const DialogBox = ({ style, characterId, characterData, txt, speed = 60, onPress, ...props }) => {
   //const colorScheme = useColorScheme();
   //const theme = Colors[colorScheme] ?? Colors.light;
-
+const speaker = characterData[characterId] || { name: "???", portrait: null };
 const opacity = useSharedValue(0);
 
 const animatedStyle = useAnimatedStyle(() => {
@@ -72,7 +72,7 @@ useEffect(() => {
     <View style={{ alignItems: 'center', marginBottom: 20 }}>
       <Pressable onPress={handlePress}>
       <Text style={styles.heading}>
-        {charaname}
+        {speaker.name}
       </Text>
       <View 
         style={[

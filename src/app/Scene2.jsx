@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import DialogBox from '../components/dialogBox';
+import DialogBox from '../components/DialogBox';
 import PlayerChoice from '../components/PlayerChoice'; 
 import scene2 from '../assets/scene2.json';
 import { loadGameForProfile, saveGameForProfile } from '../services/profileService';
+import characterList from '../assets/characters.json';
 
 const DEFAULT_NODE = 'start';
 
@@ -58,12 +59,17 @@ const Scene2 = () => {
 
   // error if json doesn't exist
   if (!data) {
-    return (
-      <View style={styles.container}>
-        <DialogBox charaname="Error" txt={`Node "${currentNode}" not found in JSON.`} />
-      </View>
-    );
-  }
+  return (
+    <View style={styles.container}>
+      <DialogBox 
+        characterId="error" // Hardcoded to "error"
+        characterData={characterList}
+        txt={`Node "${currentNode}" not found.`} 
+        onPress={goToMainMenu} 
+      />
+    </View>
+  );
+}
 
   const handleSelect = (nextNodeID) => {
     // check if next node exists before updating
@@ -86,7 +92,8 @@ const isSceneOver = !data.choices && !data.next;
   return (
     <View style={styles.container}>
       <DialogBox 
-        charaname={data.character || "System"} 
+        characterId={data.character || "system"} 
+        characterData={characterList}
         txt={data.txt} 
         onPress={!data.choices ? () => handleSelect(data.next) : null} 
       />
