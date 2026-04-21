@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DialogBox from '../components/DialogBox';
 import PlayerChoice from '../components/PlayerChoice'; 
-import { loadGameForProfile, saveGameForProfile } from '../services/profileService';
+import { loadGameForProfile, saveGameForProfile, addCurrency, spendCurrency } from '../services/profileService'; // 💰 Added currency imports
 import characterList from '../assets/characters.json';
 
 const DEFAULT_NODE = 'start';
@@ -20,8 +20,6 @@ const SceneTemplate = () => {
   const currentSceneData = sceneMap[sceneId?.toLowerCase()];
   const [currentNode, setCurrentNode] = useState(DEFAULT_NODE);
   const [ready, setReady] = useState(false);
-  
-  // 📜 This stores the list of choices
   const [history, setHistory] = useState([]);
 
   const goToMainMenu = () => {
@@ -36,7 +34,7 @@ const SceneTemplate = () => {
         const savedGame = await loadGameForProfile(selectedProfileId);
         if (savedGame?.sceneId === sceneId && currentSceneData[savedGame.currentNode]) {
           setCurrentNode(savedGame.currentNode);
-          setHistory(savedGame.history || []); // Load existing history
+          setHistory(savedGame.history || []);
         }
       }
       setReady(true);
@@ -44,19 +42,32 @@ const SceneTemplate = () => {
     setupScene();
   }, [sceneId, selectedProfileId]);
 
-  // ☁️ Automatically syncs to MongoDB whenever currentNode or history changes
   useEffect(() => {
     if (!ready || !selectedProfileId || !currentSceneData?.[currentNode]) return;
 
     saveGameForProfile(selectedProfileId, {
       sceneId: sceneId,
       currentNode,
-      history: history, // This sends the array to Atlas
+      history: history,
     });
+
+    // 💰 REWARD CHECK: If the current node has a reward, give it to the player
+    const nodeData = currentSceneData[currentNode];
+    if (nodeData.reward) {
+      addCurrency(selectedProfileId, nodeData.reward);
+    }
   }, [currentNode, ready, history]);
 
-  const handleSelect = (nextNodeID, choiceLabel = null) => {
-    // 📝 If a button was clicked, add its text to history
+  const handleSelect = async (nextNodeID, choiceLabel = null, cost = 0) => {
+    // 💰 COST CHECK: If the choice costs money, try to spend it
+    if (cost > 0) {
+      const canAfford = await spendCurrency(selectedProfileId, cost);
+      if (!canAfford) {
+        Alert.alert("Insufficient Currency", "You don't have enough to make this choice.");
+        return; // Stop the transition
+      }
+    }
+
     if (choiceLabel) {
       setHistory(prev => [...prev, choiceLabel]);
     }
@@ -64,6 +75,9 @@ const SceneTemplate = () => {
     if (currentSceneData[nextNodeID]) {
       setCurrentNode(nextNodeID);
     } else if (sceneMap[nextNodeID]) {
+      // 💰 SCENE COMPLETION REWARD: Give 100 currency for finishing a scene
+      await addCurrency(selectedProfileId, 100);
+      
       router.push({
         pathname: `/${nextNodeID}`,
         params: { profileId: selectedProfileId, mode: 'new' }
@@ -77,6 +91,8 @@ const SceneTemplate = () => {
 
   return (
     <View style={styles.container}>
+      {/* 🪙 Optional: You could add your CurrencyDisplay component here too! */}
+      
       <DialogBox 
         characterId={data.character || "system"} 
         characterData={characterList}
@@ -87,14 +103,14 @@ const SceneTemplate = () => {
       {data.choices && (
         <PlayerChoice 
           choices={data.choices} 
-          // 📢 Pass BOTH id and label back to handleSelect
-          onSelect={(id, label) => handleSelect(id, label)} 
+          // 📢 Now passing choice.cost if it exists in your JSON
+          onSelect={(id, label, cost) => handleSelect(id, label, cost)} 
         />
       )}
       
       {( !data.choices && !data.next) && (
         <TouchableOpacity style={styles.menuButton} onPress={goToMainMenu}>
-          <Text style={styles.menuButtonText}>Go to Main Menu</Text>
+          <Text style={styles.menuButtonText}>Finish & Exit</Text>
         </TouchableOpacity>
       )}
     </View>
