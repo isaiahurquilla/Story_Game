@@ -1,0 +1,28 @@
+{
+  "start": {
+    "character": "???",
+    "txt": "will you choose x, or y?",
+    "choices": [
+      { "label": "X", "next": "chosex" },
+      { "label": "y", "next": "chosey" }
+    ]
+  },
+  "chosex": {
+    "character": "???",
+    "txt": "You have chosen X",
+    "choices": null,
+    "next": "end"
+  },
+  "chosey": {
+    "character": "???",
+    "txt": "You have chosen Y",
+    "choices": null,
+    "next": "end"
+  },
+  "end": {
+    "character": "fox",
+    "txt": "The scene is now done, also im here now!",
+    "choices": null,
+    "next": "scene2"
+  }
+}

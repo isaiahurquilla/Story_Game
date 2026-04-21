@@ -11,8 +11,8 @@ const DEFAULT_NODE = 'start';
 // sceneMap, UPDATE WHEN ADDING MORE SCENES Registry of all scenes
 // ------------
 const sceneMap = {
+  scene1: require('../assets/scene1.json'),
   scene2: require('../assets/scene2.json'),
-  scene3: require('../assets/scene3.json'),
 };
 
 const SceneTemplate = () => {

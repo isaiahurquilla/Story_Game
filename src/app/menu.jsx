@@ -36,7 +36,7 @@ export default function Menu() {
         await deleteGameForProfile(selectedProfileId);
 
         router.push({
-            pathname: '/scene2',
+            pathname: '/scene1',
             params: { profileId: selectedProfileId, mode: 'new', },
         });
     };
@@ -56,7 +56,7 @@ export default function Menu() {
         if (!selectedProfileId || !saveData) return;
 
         router.push({
-            pathname: `/${saveData.sceneId || 'scene2'}`,
+            pathname: `/${saveData.sceneId || 'scene1'}`,
             params: { profileId: selectedProfileId, mode: 'load', },
         });
     };
@@ -89,7 +89,12 @@ export default function Menu() {
         <Text style={styles.primaryButtonText}>Start New Game</Text>
       </TouchableOpacity>
 
-      {['scene2', 'scene3'].map((scene) => (
+
+      {/* ------
+      ALSO UPDATE THIS WHEN ADDING SCENES IF YOU WANT
+      THEM ON THE MENU
+      ------- */}
+      {['scene1', 'scene2'].map((scene) => (
       <TouchableOpacity 
         key={scene}
         style={styles.primaryButton} 
