@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet} from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveProfile, loadProfiles, deleteProfile } from '../services/profileService';
 
@@ -35,7 +35,6 @@ export default function Index() {
     }
   };
 
-  // Function that handles profile deletion
   const handleDeleteProfile = async (id) => {
     const updatedList = await deleteProfile(id);
     setProfiles(updatedList);
@@ -69,6 +68,8 @@ export default function Index() {
           <View style={styles.profileRow}>
             <View>
               <Text style={styles.profileName}>{item.name}</Text>
+              {/* 🪙 Added Currency Display to the list */}
+              <Text style={styles.currencyText}>💰 {item.currency || 0}</Text>
               <Text style={styles.profileDate}>
                 {new Date(item.createdAt).toLocaleDateString()}
               </Text>
@@ -151,11 +152,18 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 16,
+    fontWeight: '500',
+  },
+  // 🪙 New style for the currency text
+  currencyText: {
+    color: '#d4af37',
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginVertical: 2,
   },
   profileDate: {
     color: 'gray',
     fontSize: 12,
-    marginTop: 3,
   },
   actions: {
     flexDirection: 'row',
