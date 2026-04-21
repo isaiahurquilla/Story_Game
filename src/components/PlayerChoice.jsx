@@ -7,7 +7,8 @@ const PlayerChoice = ({ choices, onSelect }) => {
         <Pressable 
           key={index} 
           style={styles.button} 
-          onPress={() => onSelect(choice.next)}
+          // 💡 Change: Pass both choice.next AND choice.label
+          onPress={() => onSelect(choice.next, choice.label)}
         >
           <Text style={styles.buttonText}>{choice.label}</Text>
         </Pressable>
@@ -16,7 +17,7 @@ const PlayerChoice = ({ choices, onSelect }) => {
   );
 }
 
-export default PlayerChoice
+export default PlayerChoice;
 
 const styles = StyleSheet.create({
     container: {

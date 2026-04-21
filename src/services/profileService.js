@@ -4,6 +4,31 @@ const PROFILES_KEY = '@profiles_list';
 const SAVES_KEY = '@story_saves';
 
 /**
+ * 💡 REPLACE 'YOUR_IP_HERE' with the IPv4 address you found in CMD
+ * Example: "http://192.168.1"
+ */
+const SERVER_URL = "https://game-server-lxjk.onrender.com/sync";
+
+/**
+ * NEW: Helper to push data to your Node.js MongoDB server
+ */
+const syncToCloud = async (action, collectionName, id, data = null) => {
+  try {
+    const response = await fetch(SERVER_URL, { // 👈 Hits the URL above
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, collectionName, id, data }),
+    });
+
+    if (!response.ok) {
+      console.log("Server received it but had an error");
+    }
+  } catch (e) {
+    console.log("Could not reach the Render server at all.");
+  }
+};
+
+/**
  * Loads the profile list from AsyncStorage
  */
 export const loadProfiles = async () => {
@@ -46,12 +71,16 @@ export const saveProfile = async (name) => {
     const updatedList = [...existingProfiles, newProfile];
     await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(updatedList));
 
+    // SYNC TO MONGO
+    syncToCloud("save", "profiles", newProfile.id, newProfile);
+
     return updatedList; // Return the updated list to update the UI state
   } catch (e) {
     console.error("Error saving profile:", e);
     return [];
   }
 };
+
 const loadAllSaves = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem(SAVES_KEY);
@@ -77,6 +106,10 @@ export const saveGameForProfile = async (profileId, saveData) => {
     };
 
     await AsyncStorage.setItem(SAVES_KEY, JSON.stringify(updatedSaves));
+
+    // SYNC TO MONGO
+    syncToCloud("save", "saves", profileId, updatedSave);
+
     return updatedSave;
   } catch (e) {
     console.error('Error saving game:', e);
@@ -101,6 +134,9 @@ export const deleteGameForProfile = async (profileId) => {
     if (allSaves[profileId]) {
       delete allSaves[profileId];
       await AsyncStorage.setItem(SAVES_KEY, JSON.stringify(allSaves));
+
+      // SYNC TO MONGO
+      syncToCloud("delete", "saves", profileId);
     }
   } catch (e) {
     console.error('Error deleting saved game:', e);
@@ -121,6 +157,9 @@ export const deleteProfile = async (id) => {
     await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(updatedList));
     await deleteGameForProfile(id); // Also delete any associated saved game data
     
+    // SYNC TO MONGO
+    syncToCloud("delete", "profiles", id);
+
     return updatedList; // Return the updated list to update the UI state
   } catch (e) {
     console.error("Error deleting profile:", e);
@@ -138,3 +177,4 @@ export const clearAllProfiles = async () => {
     console.error("Error clearing all profiles:", e);
   }
 };
+
