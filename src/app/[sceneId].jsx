@@ -93,20 +93,24 @@ const SceneTemplate = () => {
     <View style={styles.container}>
       {/* 🪙 Optional: You could add your CurrencyDisplay component here too! */}
       
-      <DialogBox 
+      
+
+      <View style={{ height: 180, justifyContent: 'center', alignItems: 'center' }}>
+      {data.choices && (
+        <PlayerChoice 
+          choices={data.choices} 
+          // passing choice.cost if it exists in the JSON
+          onSelect={(id, label, cost) => handleSelect(id, label, cost)} 
+        />
+      )}
+     </View>
+
+     <DialogBox 
         characterId={data.character || "system"} 
         characterData={characterList}
         txt={data.txt} 
         onPress={!data.choices ? () => handleSelect(data.next) : null} 
       />
-
-      {data.choices && (
-        <PlayerChoice 
-          choices={data.choices} 
-          // 📢 Now passing choice.cost if it exists in your JSON
-          onSelect={(id, label, cost) => handleSelect(id, label, cost)} 
-        />
-      )}
       
       {( !data.choices && !data.next) && (
         <TouchableOpacity style={styles.menuButton} onPress={goToMainMenu}>
