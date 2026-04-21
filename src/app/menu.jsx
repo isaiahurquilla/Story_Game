@@ -36,16 +36,27 @@ export default function Menu() {
         await deleteGameForProfile(selectedProfileId);
 
         router.push({
-            pathname: '/Scene2',
+            pathname: '/scene1',
             params: { profileId: selectedProfileId, mode: 'new', },
         });
+    };
+
+    const handleLoadScene = async (sceneKey) => {
+      if (!selectedProfileId) return;
+    // clear progress if jumping to a specific scene
+      await deleteGameForProfile(selectedProfileId);
+      router.push({
+        // Use backticks and ${} to insert the sceneKey
+        pathname: `/${sceneKey}`, 
+        params: { profileId: selectedProfileId, mode: 'new' },
+      });
     };
 
     const handleLoadGame = () => {
         if (!selectedProfileId || !saveData) return;
 
         router.push({
-            pathname: '/Scene2',
+            pathname: `/${saveData.sceneId || 'scene1'}`,
             params: { profileId: selectedProfileId, mode: 'load', },
         });
     };
@@ -77,6 +88,21 @@ export default function Menu() {
       <TouchableOpacity style={styles.primaryButton} onPress={handleNewGame}>
         <Text style={styles.primaryButtonText}>Start New Game</Text>
       </TouchableOpacity>
+
+
+      {/* ------
+      ALSO UPDATE THIS WHEN ADDING SCENES IF YOU WANT
+      THEM ON THE MENU
+      ------- */}
+      {['scene1', 'scene2'].map((scene) => (
+      <TouchableOpacity 
+        key={scene}
+        style={styles.primaryButton} 
+        onPress={() => handleLoadScene(scene)}
+      >
+        <Text style={styles.primaryButtonText}>Start {scene.toUpperCase()}</Text>
+      </TouchableOpacity>
+      ))}
 
       <TouchableOpacity
         style={[styles.primaryButton, !saveData && styles.disabledButton]}
