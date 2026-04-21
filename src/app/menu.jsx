@@ -1,7 +1,12 @@
 import { useEffect, useState} from "react";
-import {View, Text, TouchableOpacity, StyleSheet} from "react-native";
+import {View, Text, TouchableOpacity, StyleSheet, Modal, Pressable,} from "react-native";
 import {useLocalSearchParams, useRouter} from "expo-router";
 import { getProfileById, loadGameForProfile, deleteGameForProfile } from "../services/profileService";
+
+const AVAILABLE_SCENES = [
+  { key: 'scene1', label: 'Scene 1' },
+  { key: 'scene2', label: 'Scene 2' },
+];
 
 export default function Menu() {
     const router = useRouter();
@@ -12,6 +17,7 @@ export default function Menu() {
     const [profile, setProfile] = useState(null);
     const [saveData, setSaveData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [sceneModalVisible, setSceneModalVisible] = useState(false);
 
     useEffect(() => {
         const loadMenuData = async () => {
@@ -89,20 +95,12 @@ export default function Menu() {
         <Text style={styles.primaryButtonText}>Start New Game</Text>
       </TouchableOpacity>
 
-
-      {/* ------
-      ALSO UPDATE THIS WHEN ADDING SCENES IF YOU WANT
-      THEM ON THE MENU
-      ------- */}
-      {['scene1', 'scene2'].map((scene) => (
-      <TouchableOpacity 
-        key={scene}
-        style={styles.primaryButton} 
-        onPress={() => handleLoadScene(scene)}
+      <TouchableOpacity
+        style={styles.primaryButton}
+        onPress={() => setSceneModalVisible(true)}
       >
-        <Text style={styles.primaryButtonText}>Start {scene.toUpperCase()}</Text>
+        <Text style={styles.primaryButtonText}>Select Scene</Text>
       </TouchableOpacity>
-      ))}
 
       <TouchableOpacity
         style={[styles.primaryButton, !saveData && styles.disabledButton]}
@@ -110,7 +108,7 @@ export default function Menu() {
         disabled={!saveData}
       >
         <Text style={styles.primaryButtonText}>
-          {saveData ? 'Load Saved Game' : 'No Saved Game Found'}
+          {saveData ? "Load Saved Game" : "No Saved Game Found"}
         </Text>
       </TouchableOpacity>
 
@@ -123,6 +121,39 @@ export default function Menu() {
       <TouchableOpacity style={styles.secondaryButton} onPress={goBackToProfiles}>
         <Text style={styles.secondaryButtonText}>Change Profile</Text>
       </TouchableOpacity>
+
+      <Modal
+        visible={sceneModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSceneModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setSceneModalVisible(false)}
+        >
+          <Pressable style={styles.modalCard} onPress={() => {}}>
+            <Text style={styles.modalTitle}>Choose a Scene</Text>
+
+            {AVAILABLE_SCENES.map((scene) => (
+             <TouchableOpacity
+              key={scene.key}
+             style={styles.modalSceneButton}
+             onPress={() => handleLoadScene(scene.key)}
+            >
+            <Text style={styles.modalSceneButtonText}>{scene.label}</Text>
+           </TouchableOpacity>
+          ))}
+
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              onPress={() => setSceneModalVisible(false)}
+            >
+              <Text style={styles.modalCancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -177,5 +208,42 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#7a4fe0',
     fontWeight: 'bold',
+  },modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "center",
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  modalSceneButton: {
+    backgroundColor: "#7a4fe0",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  modalSceneButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalCancelButton: {
+    paddingVertical: 12,
+    alignItems: "center",
+    marginTop: 4,
+  },
+  modalCancelButtonText: {
+    color: "#7a4fe0",
+    fontWeight: "bold",
   },
 });
