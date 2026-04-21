@@ -36,7 +36,7 @@ export default function Menu() {
         await deleteGameForProfile(selectedProfileId);
 
         router.push({
-            pathname: '/Scene2',
+            pathname: '/scene2',
             params: { profileId: selectedProfileId, mode: 'new', },
         });
     };
@@ -45,7 +45,7 @@ export default function Menu() {
         if (!selectedProfileId || !saveData) return;
 
         router.push({
-            pathname: '/Scene2',
+            pathname: `/${saveData.sceneId || 'scene2'}`,
             params: { profileId: selectedProfileId, mode: 'load', },
         });
     };
