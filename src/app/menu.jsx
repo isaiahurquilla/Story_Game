@@ -1,7 +1,12 @@
 import { useEffect, useState} from "react";
-import {View, Text, TouchableOpacity, StyleSheet} from "react-native";
+import {View, Text, TouchableOpacity, StyleSheet, Modal, Pressable,} from "react-native";
 import {useLocalSearchParams, useRouter} from "expo-router";
 import { getProfileById, loadGameForProfile, deleteGameForProfile } from "../services/profileService";
+
+const AVAILABLE_SCENES = [
+  { key: 'scene1', label: 'Scene 1' },
+  { key: 'scene2', label: 'Scene 2' },
+];
 
 export default function Menu() {
     const router = useRouter();
@@ -12,6 +17,7 @@ export default function Menu() {
     const [profile, setProfile] = useState(null);
     const [saveData, setSaveData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [sceneModalVisible, setSceneModalVisible] = useState(false);
 
     useEffect(() => {
         const loadMenuData = async () => {
@@ -43,8 +49,10 @@ export default function Menu() {
 
     const handleLoadScene = async (sceneKey) => {
       if (!selectedProfileId) return;
+    // clear progress if jumping to a specific scene
       await deleteGameForProfile(selectedProfileId);
       router.push({
+        // Use backticks and ${} to insert the sceneKey
         pathname: `/${sceneKey}`, 
         params: { profileId: selectedProfileId, mode: 'new' },
       });
@@ -72,36 +80,27 @@ export default function Menu() {
             <View style={styles.container}>
                 <Text style={styles.title}>Profile not found</Text>
 
-                <TouchableOpacity style={styles.secondaryButton} onPress={goBackToProfiles}>
+                <TouchableOpacity style={styles.secondarybutton} onPress={goBackToProfiles}>
                     <Text style={styles.secondaryButtonText}>Back to Profiles</Text>
                 </TouchableOpacity>
             </View>
         );
     }
-
     return (
     <View style={styles.container}>
-      {/* 🪙 NEW: Currency Badge at the top */}
-      <View style={styles.currencyBadge}>
-        <Text style={styles.currencyText}>💰 {profile.currency || 0}</Text>
-      </View>
-
       <Text style={styles.title}>Main Menu</Text>
-      <Text style={styles.subtitle}>Playing as: {profile.name}</Text>
+      <Text style={styles.subtitle}>Profile: {profile.name}</Text>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleNewGame}>
         <Text style={styles.primaryButtonText}>Start New Game</Text>
       </TouchableOpacity>
 
-      {['scene1', 'scene2'].map((scene) => (
-      <TouchableOpacity 
-        key={scene}
-        style={styles.primaryButton} 
-        onPress={() => handleLoadScene(scene)}
+      <TouchableOpacity
+        style={styles.primaryButton}
+        onPress={() => setSceneModalVisible(true)}
       >
-        <Text style={styles.primaryButtonText}>Start {scene.toUpperCase()}</Text>
+        <Text style={styles.primaryButtonText}>Select Scene</Text>
       </TouchableOpacity>
-      ))}
 
       <TouchableOpacity
         style={[styles.primaryButton, !saveData && styles.disabledButton]}
@@ -109,7 +108,7 @@ export default function Menu() {
         disabled={!saveData}
       >
         <Text style={styles.primaryButtonText}>
-          {saveData ? 'Load Saved Game' : 'No Saved Game Found'}
+          {saveData ? "Load Saved Game" : "No Saved Game Found"}
         </Text>
       </TouchableOpacity>
 
@@ -122,6 +121,39 @@ export default function Menu() {
       <TouchableOpacity style={styles.secondaryButton} onPress={goBackToProfiles}>
         <Text style={styles.secondaryButtonText}>Change Profile</Text>
       </TouchableOpacity>
+
+      <Modal
+        visible={sceneModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSceneModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setSceneModalVisible(false)}
+        >
+          <Pressable style={styles.modalCard} onPress={() => {}}>
+            <Text style={styles.modalTitle}>Choose a Scene</Text>
+
+            {AVAILABLE_SCENES.map((scene) => (
+             <TouchableOpacity
+              key={scene.key}
+             style={styles.modalSceneButton}
+             onPress={() => handleLoadScene(scene.key)}
+            >
+            <Text style={styles.modalSceneButtonText}>{scene.label}</Text>
+           </TouchableOpacity>
+          ))}
+
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              onPress={() => setSceneModalVisible(false)}
+            >
+              <Text style={styles.modalCancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -132,22 +164,6 @@ const styles = StyleSheet.create({
     padding: 32,
     justifyContent: 'center',
     backgroundColor: '#fff',
-  },
-  // 🪙 New style for the currency badge
-  currencyBadge: {
-    position: 'absolute',
-    top: 50,
-    right: 32,
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#ffd700',
-  },
-  currencyText: {
-    fontWeight: 'bold',
-    color: '#b8860b',
   },
   title: {
     fontSize: 30,
@@ -188,10 +204,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#7a4fe0',
-    marginTop: 10,
   },
   secondaryButtonText: {
     color: '#7a4fe0',
     fontWeight: 'bold',
+  },modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "center",
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  modalSceneButton: {
+    backgroundColor: "#7a4fe0",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  modalSceneButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalCancelButton: {
+    paddingVertical: 12,
+    alignItems: "center",
+    marginTop: 4,
+  },
+  modalCancelButtonText: {
+    color: "#7a4fe0",
+    fontWeight: "bold",
   },
 });
