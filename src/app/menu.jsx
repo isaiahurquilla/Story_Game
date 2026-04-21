@@ -41,6 +41,17 @@ export default function Menu() {
         });
     };
 
+    const handleLoadScene = async (sceneKey) => {
+      if (!selectedProfileId) return;
+    // clear progress if jumping to a specific scene
+      await deleteGameForProfile(selectedProfileId);
+      router.push({
+        // Use backticks and ${} to insert the sceneKey
+        pathname: `/${sceneKey}`, 
+        params: { profileId: selectedProfileId, mode: 'new' },
+      });
+    };
+
     const handleLoadGame = () => {
         if (!selectedProfileId || !saveData) return;
 
@@ -77,6 +88,16 @@ export default function Menu() {
       <TouchableOpacity style={styles.primaryButton} onPress={handleNewGame}>
         <Text style={styles.primaryButtonText}>Start New Game</Text>
       </TouchableOpacity>
+
+      {['scene2', 'scene3'].map((scene) => (
+      <TouchableOpacity 
+        key={scene}
+        style={styles.primaryButton} 
+        onPress={() => handleLoadScene(scene)}
+      >
+        <Text style={styles.primaryButtonText}>Start {scene.toUpperCase()}</Text>
+      </TouchableOpacity>
+      ))}
 
       <TouchableOpacity
         style={[styles.primaryButton, !saveData && styles.disabledButton]}
