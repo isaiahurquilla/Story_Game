@@ -60,7 +60,7 @@ useEffect(() => {
   const [visable, setVisable] = useState(true)
 
   const handlePress = () => {
-  // If the typewriter is still going, maybe "skip" to the end?
+  // skip to end if text is still displaying
   if (currentIndex < txt.length) {
     setDisplayedText(txt);
     setCurrentIndex(txt.length);
@@ -76,12 +76,15 @@ useEffect(() => {
   }
   return (
     <View style={{ alignItems: 'center', marginBottom: 20 }}>
-      {speaker.portrait && (
-      <Image 
-        source={imageMap[speaker.portrait]} 
-        style={styles.portrait} 
-      />
-      )}
+      
+      <View style={styles.portraitContainer}>
+        {speaker.portrait ? (
+          <Image source={imageMap[speaker.portrait]} style={styles.portrait} />
+        ) : (
+          <View style={styles.portraitPlaceholder} /> 
+        )}
+      </View>
+
       <Pressable onPress={handlePress}>
       <Text style={styles.heading}>
         {speaker.name}
@@ -103,16 +106,26 @@ useEffect(() => {
 export default DialogBox;
 
 const styles = StyleSheet.create({
+    portraitContainer: {
+      width: 64,
+      height: 64,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
     portrait: {
       width: 64,
       height: 64,
       marginBottom: 10,
+      // borderRadius: 32, //circle
       backgroundColor: '#ccc', // Helps see if box is there
     },
     card: {
       padding: 20,
-      minWidth: 280,
-      maxWidth: 320,
+      height: 150,
+      width: 350,
+      //minWidth: 280,
+      //maxWidth: 320,
       borderRadius: 8,
       backgroundColor: '#dba5e3' ,
       shadowColor: '#483d50',

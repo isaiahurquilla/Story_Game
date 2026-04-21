@@ -118,9 +118,24 @@ const SceneTemplate = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center', backgroundColor: '#fff' },
-  menuButton: { padding: 15, backgroundColor: '#7a4fe0', borderRadius: 8, marginTop: 20 },
-  menuButtonText: { color: 'white', textAlign: 'center', fontWeight: 'bold' }
+  container: { 
+    flex: 1,
+    padding: 20, 
+    justifyContent: 'flex-end',
+    paddingBottom: 50, 
+    backgroundColor: '#fff' 
+  },
+  menuButton: {
+    padding: 15,
+    backgroundColor: '#7a4fe0',
+    borderRadius: 8, 
+    marginTop: 20 
+  },
+  menuButtonText: { 
+    color: 'white', 
+    textAlign: 'center', 
+    fontWeight: 'bold' 
+  }
 });
 
 export default SceneTemplate;
