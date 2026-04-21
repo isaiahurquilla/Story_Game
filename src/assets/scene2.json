@@ -22,6 +22,7 @@
   "end": {
     "character": "fox",
     "txt": "The scene is now done, also im here now!",
-    "choices": null
+    "choices": null,
+    "next": "scene3"
   }
 }

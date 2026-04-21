@@ -7,8 +7,9 @@ import { loadGameForProfile, saveGameForProfile } from '../services/profileServi
 import characterList from '../assets/characters.json';
 
 const DEFAULT_NODE = 'start';
-
-// Registry of all scenes
+// ------------
+// sceneMap, UPDATE WHEN ADDING MORE SCENES Registry of all scenes
+// ------------
 const sceneMap = {
   scene2: require('../assets/scene2.json'),
   scene3: require('../assets/scene3.json'),
@@ -93,14 +94,24 @@ const SceneTemplate = () => {
   }
 
   const handleSelect = (nextNodeID) => {
+  // 1. Check if the next node is in current file
     if (currentSceneData[nextNodeID]) {
       setCurrentNode(nextNodeID);
-    } else if (sceneMap[nextNodeID]) {
-      // Navigate to a new scene file if the node points to a key in our map
+   } 
+  // 2. If not, check if it's a key in sceneMap
+    else if (sceneMap[nextNodeID]) {
+      console.log(`Transitioning from ${sceneId} to ${nextNodeID}`);
+    
       router.push({
-        pathname: `/${nextNodeID}`, 
-        params: { profileId: selectedProfileId, mode: 'play' }
+        pathname: `/${nextNodeID}`, // Navigates 
+        params: { 
+          profileId: selectedProfileId, 
+          mode: 'new' // Start the new scene from the 'start' node
+        }
       });
+    } 
+    else {
+      console.warn(`Path not found: ${nextNodeID}`);
     }
   };
 
