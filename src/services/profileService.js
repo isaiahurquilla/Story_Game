@@ -2,24 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PROFILES_KEY = '@profiles_list';
 const SAVES_KEY = '@story_saves';
-
-/**
- * 💡 REPLACE 'YOUR_IP_HERE' with the IPv4 address you found in CMD
- * Example: "http://192.168.1"
- */
 const SERVER_URL = "https://game-server-lxjk.onrender.com/sync";
 
-/**
- * NEW: Helper to push data to your Node.js MongoDB server
- */
 const syncToCloud = async (action, collectionName, id, data = null) => {
   try {
-    const response = await fetch(SERVER_URL, { // 👈 Hits the URL above
+    const response = await fetch(SERVER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action, collectionName, id, data }),
     });
-
     if (!response.ok) {
       console.log("Server received it but had an error");
     }
@@ -28,13 +19,9 @@ const syncToCloud = async (action, collectionName, id, data = null) => {
   }
 };
 
-/**
- * Loads the profile list from AsyncStorage
- */
 export const loadProfiles = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem(PROFILES_KEY);
-    // If data exists, parse it; otherwise return an empty array
     return jsonValue != null ? JSON.parse(jsonValue) : [];
   } catch (e) {
     console.error("Error loading profiles:", e);
@@ -52,9 +39,6 @@ export const getProfileById = async (id) => {
   }
 };
 
-/**
- * Saves a new profile to the existing list
- */
 export const saveProfile = async (name) => {
   try {
     const trimmedName = name.trim();
@@ -66,20 +50,78 @@ export const saveProfile = async (name) => {
       id: Date.now().toString(),
       name: trimmedName,
       createdAt: new Date().toISOString(),
+      currency: 0, // 🪙 NEW: Initialize currency at 0
     };
     
     const updatedList = [...existingProfiles, newProfile];
     await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(updatedList));
 
-    // SYNC TO MONGO
     syncToCloud("save", "profiles", newProfile.id, newProfile);
-
-    return updatedList; // Return the updated list to update the UI state
+    return updatedList;
   } catch (e) {
     console.error("Error saving profile:", e);
     return [];
   }
 };
+
+// --- 💰 NEW CURRENCY LOGIC ---
+
+/**
+ * Adds currency and syncs to cloud
+ */
+export const addCurrency = async (profileId, amount) => {
+  try {
+    const profiles = await loadProfiles();
+    let updatedProfile = null;
+
+    const updatedList = profiles.map(p => {
+      if (p.id === profileId) {
+        updatedProfile = { ...p, currency: (p.currency || 0) + amount };
+        return updatedProfile;
+      }
+      return p;
+    });
+
+    if (updatedProfile) {
+      await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(updatedList));
+      syncToCloud("save", "profiles", profileId, updatedProfile);
+    }
+    return updatedList;
+  } catch (e) {
+    console.error("Error adding currency:", e);
+  }
+};
+
+/**
+ * Checks balance and spends if possible
+ */
+export const spendCurrency = async (profileId, amount) => {
+  try {
+    const profiles = await loadProfiles();
+    let success = false;
+    let updatedProfile = null;
+
+    const updatedList = profiles.map(p => {
+      if (p.id === profileId && (p.currency || 0) >= amount) {
+        success = true;
+        updatedProfile = { ...p, currency: p.currency - amount };
+        return updatedProfile;
+      }
+      return p;
+    });
+
+    if (success) {
+      await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(updatedList));
+      syncToCloud("save", "profiles", profileId, updatedProfile);
+    }
+    return success;
+  } catch (e) {
+    console.error("Error spending currency:", e);
+    return false;
+  }
+};
+
+// --- END NEW CURRENCY LOGIC ---
 
 const loadAllSaves = async () => {
   try {
@@ -94,22 +136,11 @@ const loadAllSaves = async () => {
 export const saveGameForProfile = async (profileId, saveData) => {
   try {
     const allSaves = await loadAllSaves();
-
-    const updatedSave = {
-      ...saveData,
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedSaves = {
-      ...allSaves,
-      [profileId]: updatedSave,
-    };
+    const updatedSave = { ...saveData, updatedAt: new Date().toISOString() };
+    const updatedSaves = { ...allSaves, [profileId]: updatedSave };
 
     await AsyncStorage.setItem(SAVES_KEY, JSON.stringify(updatedSaves));
-
-    // SYNC TO MONGO
     syncToCloud("save", "saves", profileId, updatedSave);
-
     return updatedSave;
   } catch (e) {
     console.error('Error saving game:', e);
@@ -130,12 +161,9 @@ export const loadGameForProfile = async (profileId) => {
 export const deleteGameForProfile = async (profileId) => {
   try {
     const allSaves = await loadAllSaves();
-
     if (allSaves[profileId]) {
       delete allSaves[profileId];
       await AsyncStorage.setItem(SAVES_KEY, JSON.stringify(allSaves));
-
-      // SYNC TO MONGO
       syncToCloud("delete", "saves", profileId);
     }
   } catch (e) {
@@ -143,33 +171,20 @@ export const deleteGameForProfile = async (profileId) => {
   }
 };
 
-/**
- * Deletes a specific profile by its ID
- */
 export const deleteProfile = async (id) => {
   try {
     const existingProfiles = await loadProfiles();
-    
-    // Creates a new array that ignores existing profiles
     const updatedList = existingProfiles.filter(profile => profile.id !== id);
-    
-    // Save the filtered list back to AsyncStorage
     await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(updatedList));
-    await deleteGameForProfile(id); // Also delete any associated saved game data
-    
-    // SYNC TO MONGO
+    await deleteGameForProfile(id);
     syncToCloud("delete", "profiles", id);
-
-    return updatedList; // Return the updated list to update the UI state
+    return updatedList;
   } catch (e) {
     console.error("Error deleting profile:", e);
     return [];
   }
 };
 
-/**
- * Completely wipes all profiles if necessary
- */
 export const clearAllProfiles = async () => {
   try {
     await AsyncStorage.removeItem(PROFILES_KEY);
@@ -177,4 +192,3 @@ export const clearAllProfiles = async () => {
     console.error("Error clearing all profiles:", e);
   }
 };
-

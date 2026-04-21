@@ -43,10 +43,8 @@ export default function Menu() {
 
     const handleLoadScene = async (sceneKey) => {
       if (!selectedProfileId) return;
-    // clear progress if jumping to a specific scene
       await deleteGameForProfile(selectedProfileId);
       router.push({
-        // Use backticks and ${} to insert the sceneKey
         pathname: `/${sceneKey}`, 
         params: { profileId: selectedProfileId, mode: 'new' },
       });
@@ -74,26 +72,27 @@ export default function Menu() {
             <View style={styles.container}>
                 <Text style={styles.title}>Profile not found</Text>
 
-                <TouchableOpacity style={styles.secondarybutton} onPress={goBackToProfiles}>
+                <TouchableOpacity style={styles.secondaryButton} onPress={goBackToProfiles}>
                     <Text style={styles.secondaryButtonText}>Back to Profiles</Text>
                 </TouchableOpacity>
             </View>
         );
     }
+
     return (
     <View style={styles.container}>
+      {/* 🪙 NEW: Currency Badge at the top */}
+      <View style={styles.currencyBadge}>
+        <Text style={styles.currencyText}>💰 {profile.currency || 0}</Text>
+      </View>
+
       <Text style={styles.title}>Main Menu</Text>
-      <Text style={styles.subtitle}>Profile: {profile.name}</Text>
+      <Text style={styles.subtitle}>Playing as: {profile.name}</Text>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleNewGame}>
         <Text style={styles.primaryButtonText}>Start New Game</Text>
       </TouchableOpacity>
 
-
-      {/* ------
-      ALSO UPDATE THIS WHEN ADDING SCENES IF YOU WANT
-      THEM ON THE MENU
-      ------- */}
       {['scene1', 'scene2'].map((scene) => (
       <TouchableOpacity 
         key={scene}
@@ -134,6 +133,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
+  // 🪙 New style for the currency badge
+  currencyBadge: {
+    position: 'absolute',
+    top: 50,
+    right: 32,
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ffd700',
+  },
+  currencyText: {
+    fontWeight: 'bold',
+    color: '#b8860b',
+  },
   title: {
     fontSize: 30,
     fontWeight: 'bold',
@@ -173,6 +188,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#7a4fe0',
+    marginTop: 10,
   },
   secondaryButtonText: {
     color: '#7a4fe0',
