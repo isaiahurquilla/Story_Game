@@ -7,7 +7,7 @@ const PlayerChoice = ({ choices, onSelect }) => {
         <Pressable 
           key={index} 
           style={styles.button} 
-          // 💡 Change: Pass both choice.next AND choice.label
+          // Pass both choice.next AND choice.label
           onPress={() => onSelect(choice.next, choice.label)}
         >
           <Text style={styles.buttonText}>{choice.label}</Text>
@@ -22,18 +22,26 @@ export default PlayerChoice;
 const styles = StyleSheet.create({
     container: {
       
-      padding: 10,
-      minWidth: 280,
-      maxWidth: 1000,
-      borderRadius: 8,
-      borderColor: "red",
+      //padding: 10,
+      //minWidth: 280,
+      //maxWidth: 1000,
+      //borderRadius: 8,
+      //borderColor: "red",
+      //alignItems: "center",
+      position: 'absolute',
+      bottom: 120,          
+      alignSelf: 'center', 
+      width: '100%',
       alignItems: "center",
+      zIndex: 10,
     },
     button: {
-      padding: 20,
+      padding: 15,
+      marginVertical: 5,
       margin: 20,
-      minWidth: 50,
-      maxWidth: 100,
+      width: 250,
+      //minWidth: 50,
+      //maxWidth: 100,
       borderRadius: 8,
       backgroundColor: '#dba5e3' ,
       shadowColor: '#483d50',
