@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DialogBox from '../components/DialogBox';
 import PlayerChoice from '../components/PlayerChoice'; 
-import { loadGameForProfile, saveGameForProfile, addCurrency, spendCurrency } from '../services/profileService'; // 💰 Added currency imports
+import { loadGameForProfile, saveGameForProfile, addCurrency, spendCurrency } from '../services/profileService';
 import characterList from '../assets/characters.json';
 
 const DEFAULT_NODE = 'start';
@@ -22,7 +22,11 @@ const SceneTemplate = () => {
   const [ready, setReady] = useState(false);
   const [history, setHistory] = useState([]);
 
-  const goToMainMenu = () => {
+  // Added async and currency reward for finishing the scene
+  const goToMainMenu = async () => {
+    if (selectedProfileId) {
+      await addCurrency(selectedProfileId, 100);
+    }
     router.replace({ pathname: '/menu', params: { profileId: selectedProfileId } });
   };
 
@@ -51,7 +55,6 @@ const SceneTemplate = () => {
       history: history,
     });
 
-    // 💰 REWARD CHECK: If the current node has a reward, give it to the player
     const nodeData = currentSceneData[currentNode];
     if (nodeData.reward) {
       addCurrency(selectedProfileId, nodeData.reward);
@@ -59,12 +62,11 @@ const SceneTemplate = () => {
   }, [currentNode, ready, history]);
 
   const handleSelect = async (nextNodeID, choiceLabel = null, cost = 0) => {
-    // 💰 COST CHECK: If the choice costs money, try to spend it
     if (cost > 0) {
       const canAfford = await spendCurrency(selectedProfileId, cost);
       if (!canAfford) {
         Alert.alert("Insufficient Currency", "You don't have enough to make this choice.");
-        return; // Stop the transition
+        return;
       }
     }
 
@@ -75,7 +77,7 @@ const SceneTemplate = () => {
     if (currentSceneData[nextNodeID]) {
       setCurrentNode(nextNodeID);
     } else if (sceneMap[nextNodeID]) {
-      // 💰 SCENE COMPLETION REWARD: Give 100 currency for finishing a scene
+      // Reward for transitioning from one scene file to another
       await addCurrency(selectedProfileId, 100);
       
       router.push({
@@ -91,15 +93,10 @@ const SceneTemplate = () => {
 
   return (
     <View style={styles.container}>
-      {/* 🪙 Optional: You could add your CurrencyDisplay component here too! */}
-      
-      
-
       <View style={{ height: 180, justifyContent: 'center', alignItems: 'center' }}>
       {data.choices && (
         <PlayerChoice 
           choices={data.choices} 
-          // passing choice.cost if it exists in the JSON
           onSelect={(id, label, cost) => handleSelect(id, label, cost)} 
         />
       )}
@@ -114,7 +111,7 @@ const SceneTemplate = () => {
       
       {( !data.choices && !data.next) && (
         <TouchableOpacity style={styles.menuButton} onPress={goToMainMenu}>
-          <Text style={styles.menuButtonText}>Finish & Exit</Text>
+          <Text style={styles.menuButtonText}>Finish & Exit (+100 💰)</Text>
         </TouchableOpacity>
       )}
     </View>
