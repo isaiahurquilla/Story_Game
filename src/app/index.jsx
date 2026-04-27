@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveProfile, loadProfiles, deleteProfile } from '../services/profileService';
 
@@ -40,153 +48,258 @@ export default function Index() {
     setProfiles(updatedList);
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Untitled Story Game</Text>
+  const renderProfile = ({ item }) => (
+    <View style={styles.profileCard}>
+      <View style={styles.profileBadge}>
+        <Text style={styles.profileBadgeText}>
+          {item.name?.charAt(0)?.toUpperCase() || '?'}
+        </Text>
+      </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Create New Profile</Text>
+      <View style={styles.profileInfo}>
+        <Text style={styles.profileName}>{item.name}</Text>
+        <Text style={styles.profileMeta}>Traveler of DreamLand</Text>
+        <Text style={styles.currencyText}>💰 {item.currency || 0}</Text>
+        <Text style={styles.profileDate}>
+          Began {new Date(item.createdAt).toLocaleDateString()}
+        </Text>
+      </View>
+
+      <View style={styles.actions}>
+        <TouchableOpacity
+          onPress={() => openMenu(item.id)}
+          style={[styles.actionButton, styles.chooseButton]}
+        >
+          <Text style={styles.actionText}>Enter</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => handleDeleteProfile(item.id)}
+          style={[styles.actionButton, styles.deleteButton]}
+        >
+          <Text style={styles.actionText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.background} />
+
+      <View style={styles.header}>
+        <Text style={styles.kicker}>A STORY OF STRANGE WELCOMES</Text>
+        <Text style={styles.title}>DreamLand</Text>
+        <Text style={styles.subtitle}>
+          Choose whose story will continue.
+        </Text>
+      </View>
+
+      <View style={styles.createCard}>
+        <Text style={styles.sectionTitle}>Choose Your Name</Text>
 
         <TextInput
-          placeholder="Enter Profile Name"
+          placeholder="Enter a traveler name"
+          placeholderTextColor="#9c8db1"
           value={name}
           onChangeText={setName}
           style={styles.input}
         />
 
         <TouchableOpacity style={styles.primaryButton} onPress={handleCreateProfile}>
-          <Text style={styles.primaryButtonText}>Add Profile</Text>
+          <Text style={styles.primaryButtonText}>Begin New Tale</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.listTitle}>Existing Profiles:</Text>
+      <Text style={styles.listTitle}>Existing Tales</Text>
 
       <FlatList
         data={profiles}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.profileRow}>
-            <View>
-              <Text style={styles.profileName}>{item.name}</Text>
-              {/* 🪙 Added Currency Display to the list */}
-              <Text style={styles.currencyText}>💰 {item.currency || 0}</Text>
-              <Text style={styles.profileDate}>
-                {new Date(item.createdAt).toLocaleDateString()}
-              </Text>
-            </View>
-
-            <View style={styles.actions}>
-              <TouchableOpacity
-                onPress={() => openMenu(item.id)}
-                style={[styles.actionButton, styles.chooseButton]}
-              >
-                <Text style={styles.actionText}>Choose</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => handleDeleteProfile(item.id)}
-                style={[styles.actionButton, styles.deleteButton]}
-              >
-                <Text style={styles.actionText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
+        renderItem={renderProfile}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No tale has begun yet.</Text>
+            <Text style={styles.emptyText}>
+              Create a profile above to enter the story.
+            </Text>
           </View>
-        )}
-        ListEmptyComponent={<Text style={styles.emptyText}>No profiles found.</Text>}
+        }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 32,
+  screen: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#1b1328',
+  },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#1b1328',
+  },
+  header: {
+    paddingTop: 28,
+    paddingHorizontal: 24,
+    paddingBottom: 18,
+    alignItems: 'center',
+  },
+  kicker: {
+    color: '#b8a6d9',
+    fontSize: 11,
+    letterSpacing: 2,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 28,
-    marginBottom: 20,
-    fontWeight: 'bold',
+    color: '#f6f0ff',
+    fontSize: 42,
+    fontWeight: '800',
+    marginBottom: 8,
   },
-  card: {
-    marginBottom: 32,
-    padding: 16,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 10,
+  subtitle: {
+    color: '#d7caeb',
+    fontSize: 15,
+    textAlign: 'center',
+  },
+  createCard: {
+    marginHorizontal: 20,
+    marginBottom: 18,
+    padding: 18,
+    borderRadius: 18,
+    backgroundColor: '#2a1e3b',
+    borderWidth: 1,
+    borderColor: '#4d3a69',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   sectionTitle: {
-    fontWeight: '600',
-    marginBottom: 10,
+    color: '#f4ecff',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 12,
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    borderColor: '#5f4b7f',
+    padding: 14,
+    marginBottom: 14,
+    backgroundColor: '#f7f1ff',
+    borderRadius: 14,
+    color: '#241830',
   },
   primaryButton: {
-    backgroundColor: '#7a4fe0',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#8b5cf6',
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: 'center',
   },
   primaryButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '800',
+    fontSize: 15,
   },
   listTitle: {
+    color: '#f4ecff',
     fontSize: 18,
+    fontWeight: '700',
+    marginHorizontal: 22,
     marginBottom: 10,
-    fontWeight: '600',
   },
-  profileRow: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+  },
+  profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: '#2a1e3b',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#4d3a69',
+    padding: 16,
+    marginBottom: 12,
+  },
+  profileBadge: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#8b5cf6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  profileBadgeText: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  profileInfo: {
+    flex: 1,
+    paddingRight: 10,
   },
   profileName: {
-    fontSize: 16,
-    fontWeight: '500',
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
   },
-  // 🪙 New style for the currency text
+  profileMeta: {
+    color: '#cbbbe6',
+    fontSize: 12,
+    marginTop: 2,
+    marginBottom: 4,
+  },
   currencyText: {
-    color: '#d4af37',
-    fontWeight: 'bold',
+    color: '#f2cf66',
+    fontWeight: '700',
     fontSize: 14,
-    marginVertical: 2,
+    marginBottom: 2,
   },
   profileDate: {
-    color: 'gray',
+    color: '#aa9ac7',
     fontSize: 12,
   },
   actions: {
-    flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'center',
   },
   actionButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginVertical: 4,
+    alignItems: 'center',
   },
   chooseButton: {
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#4c7df0',
   },
   deleteButton: {
-    backgroundColor: '#ff4444',
+    backgroundColor: '#b1435d',
   },
   actionText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontWeight: '700',
     fontSize: 12,
   },
+  emptyCard: {
+    marginTop: 8,
+    padding: 18,
+    borderRadius: 18,
+    backgroundColor: '#2a1e3b',
+    borderWidth: 1,
+    borderColor: '#4d3a69',
+  },
+  emptyTitle: {
+    color: '#f4ecff',
+    fontWeight: '700',
+    fontSize: 16,
+    marginBottom: 6,
+  },
   emptyText: {
-    color: 'gray',
-    marginTop: 10,
+    color: '#cbbbe6',
+    lineHeight: 20,
   },
 });
