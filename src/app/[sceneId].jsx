@@ -93,27 +93,31 @@ const SceneTemplate = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{ height: 180, justifyContent: 'center', alignItems: 'center' }}>
+      {/* 🪙 Optional: You could add your CurrencyDisplay component here too! */}
+      
+      <DialogBox 
+        characterId={data.character || "system"} 
+        characterData={characterList}
+        txt={data.txt} 
+        onPress={!data.choices ? () => handleSelect(data.next) : null} 
+      />
+
+      <View style={{ height: 180, justifyContent: 'center', alignItems: 'center', marginTop: 20 }}> 
       {data.choices && (
         <PlayerChoice 
           choices={data.choices} 
           onSelect={(id, label, cost) => handleSelect(id, label, cost)} 
         />
       )}
-     </View>
+     {/* </View> */}
 
-     <DialogBox 
-        characterId={data.character || "system"} 
-        characterData={characterList}
-        txt={data.txt} 
-        onPress={!data.choices ? () => handleSelect(data.next) : null} 
-      />
-      
       {( !data.choices && !data.next) && (
         <TouchableOpacity style={styles.menuButton} onPress={goToMainMenu}>
           <Text style={styles.menuButtonText}>Finish & Exit (+100 💰)</Text>
         </TouchableOpacity>
       )}
+      </View> 
+
     </View>
   );
 };
@@ -123,8 +127,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20, 
     justifyContent: 'flex-end',
-    paddingBottom: 50, 
-    backgroundColor: '#fff' 
+    paddingBottom: 60, 
+    backgroundColor: '#1b1328' 
   },
   menuButton: {
     padding: 15,
@@ -140,4 +144,3 @@ const styles = StyleSheet.create({
 });
 
 export default SceneTemplate;
-
