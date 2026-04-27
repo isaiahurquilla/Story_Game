@@ -4,56 +4,46 @@ const PlayerChoice = ({ choices, onSelect }) => {
   return (
     <View style={styles.container}>
       {choices.map((choice, index) => (
-        <Pressable 
-          key={index} 
-          style={styles.button} 
-          // Pass both choice.next AND choice.label
-          onPress={() => onSelect(choice.next, choice.label)}
+        <Pressable
+          key={index}
+          style={styles.button}
+          onPress={() => onSelect(choice.next, choice.label, choice.cost || 0)}
         >
-          <Text style={styles.buttonText}>{choice.label}</Text>
+          <Text style={styles.buttonText}>
+            {choice.label}
+            {choice.cost ? ` (-${choice.cost} 💰)` : ''}
+          </Text>
         </Pressable>
       ))}
     </View>
   );
-}
+};
 
 export default PlayerChoice;
 
 const styles = StyleSheet.create({
-    container: {
-      
-      //padding: 10,
-      //minWidth: 280,
-      //maxWidth: 1000,
-      //borderRadius: 8,
-      //borderColor: "red",
-      //alignItems: "center",
-      position: 'absolute',
-      bottom: 120,          
-      alignSelf: 'center', 
-      width: '100%',
-      alignItems: "center",
-      zIndex: 10,
-    },
-    button: {
-      padding: 15,
-      marginVertical: 5,
-      margin: 20,
-      width: 250,
-      //minWidth: 50,
-      //maxWidth: 100,
-      borderRadius: 8,
-      backgroundColor: '#dba5e3' ,
-      shadowColor: '#483d50',
-      shadowOffset: { width: 4, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 0,
-      elevation: 5,
-    },
-    buttonText: {
-      fontWeight: "bold", 
-      fontSize: 12,
-      textAlign: 'left',
-      color: "black",
-    },
+  container: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+  },
+  button: {
+    padding: 15,
+    marginVertical: 5,
+    width: 250,
+    borderRadius: 8,
+    backgroundColor: '#dba5e3',
+    shadowColor: '#483d50',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 5,
+  },
+  buttonText: {
+    fontWeight: 'bold',
+    fontSize: 12,
+    textAlign: 'left',
+    color: 'black',
+  },
 });

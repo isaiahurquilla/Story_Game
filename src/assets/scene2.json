@@ -1,27 +1,33 @@
 {
   "start": {
     "character": "fox",
-    "txt": "hey hows it goin",
-    "choices": [
-      { "label": "Okay", "next": "ok" },
-      { "label": "Not okay", "next": "notok" }
-    ]
+    "txt": "No time to explain, we need to get out of here!"
   },
-  "ok": {
-    "character": "fox",
-    "txt": "Thats good!",
-    "choices": null,
+  "scene2": {
+    "character": "system",
+    "txt": "You and the fox run out of the cave and into the forest, the rumbling getting louder behind you.",
+    "next": "keepRunning",
+    "effect": "shake",
+    "autoAdvance": true
+  },
+  "keepRunning": {
+    "character": "player",
+    "txt": "We need to find somewhere to hide!",
+    "next": "findHidingSpot"
+  },
+  "findHidingSpot": {
+    "character": "player",
+    "txt": "I see a cave over there!",
+    "next": "enterCave"
+  },
+  "enterCave": {
+    "character": "player",
+    "txt": "Let's hide in there!",
+    "next": "safe"
+  },
+  "safe": {
+    "character": "system",
+    "txt": "You and the fox take cover in the cave as the rumbling fades away.",
     "next": "end"
-  },
-  "notok": {
-    "character": "fox",
-    "txt": "Thats bad!",
-    "choices": null,
-    "next": "end"
-  },
-  "end": {
-    "character": "fox",
-    "txt": "Anyway, bye now!",
-    "choices": null
   }
 }
