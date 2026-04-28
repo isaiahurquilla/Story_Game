@@ -117,8 +117,10 @@ const styles = StyleSheet.create({
       width: 64,
       height: 64,
       marginBottom: 10,
-      // borderRadius: 32, //circle
-      backgroundColor: '#ccc', // Helps see if box is there
+      borderWidth: 2,
+      borderColor: '#4d3a69',
+      borderRadius: 32, //circle
+      backgroundColor: '#8b5cf6', // Helps see if box is there
     },
     card: {
       padding: 20,
@@ -126,21 +128,26 @@ const styles = StyleSheet.create({
       width: 350,
       //minWidth: 280,
       //maxWidth: 320,
-      borderRadius: 8,
-      backgroundColor: '#dba5e3' ,
-      shadowColor: '#483d50',
-      shadowOffset: { width: 4, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 0,
+      borderRadius: 18,
+      //backgroundColor: '#2a1e3b',
+      backgroundColor: '#8b5cf6',
+      borderWidth: 1,
+      borderColor: '#4d3a69',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
       elevation: 5,
     },
     heading: {
-      fontWeight: "bold", 
-      fontSize: 24,
+      fontWeight: '800', 
+      fontSize: 22,
       textAlign: 'left',
-      alignItems: 'left',
       marginBottom: 10,
-      color: "black",
-      
+      color: '#f6f0ff', 
     },
+    bodyText: {
+      color: '#d7caeb', 
+      fontSize: 15,
+    }
 });
