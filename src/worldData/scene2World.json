@@ -1,0 +1,29 @@
+{
+  "world": {
+    "width": 1400,
+    "height": 900,
+    "theme": "forest_escape"
+  },
+  "spawn": {
+    "x": 160,
+    "y": 620
+  },
+  "npcs": [
+    {
+      "id": "wolf",
+      "x": 980,
+      "y": 360,
+      "interactionNode": "start"
+    }
+  ],
+  "colliders": [
+    {
+      "id": "rock1",
+      "x": 420,
+      "y": 480,
+      "width": 140,
+      "height": 100
+    }
+  ],
+  "exits": []
+}

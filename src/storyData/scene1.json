@@ -5,8 +5,7 @@
     "choices": [
       { "label": "Play along", "next": "playAlong" },
       { "label": "Ask what he means", "next": "askWhatMeans" }
-    ],
-    "effect": "flash"
+    ]
   },
   "playAlong": {
     "character": "player",
