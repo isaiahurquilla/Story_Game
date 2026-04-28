@@ -1,103 +1,125 @@
-/*
-Call this function from index/another page using 
-import DialogBox from '../components/DialogBox'
-
-<DialogBox charaname='NPC name here' txt='speech goes here'></DialogBox>
-*/
-
-import { Pressable, StyleSheet, Text, View, Image, useColorScheme } from 'react-native';
-//import Colors from "../constants/Colors";
-import { useState, useEffect } from 'react'
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  withSpring 
+import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
 } from 'react-native-reanimated';
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
 const imageMap = {
-  "fox_image": require('../assets/images/fox.png'),
-  "wolf_image": require('../assets/images/wolf.png'),
-  "hare_image": require('../assets/images/hare.png'),
+  fox_image: require('../assets/images/fox.png'),
+  wolf_image: require('../assets/images/wolf.png'),
+  hare_image: require('../assets/images/hare.png'),
 };
 
-const DialogBox = ({ style, characterId, characterData, txt, speed = 60, onPress, ...props }) => {
-  //const colorScheme = useColorScheme();
-  //const theme = Colors[colorScheme] ?? Colors.light;
-const speaker = characterData[characterId] || { name: "???", portrait: null };
-const opacity = useSharedValue(0);
+const DialogBox = ({
+  style,
+  variant = 'default',
+  characterId,
+  characterData,
+  txt = '',
+  speed = 24,
+  onPress,
+  showPortrait = true,
+  continueHint,
+  portraitOverride,
+  children,
+  ...props
+}) => {
+  const speaker = useMemo(() => {
+    return characterData?.[characterId] || { name: 'Narrator', portrait: null };
+  }, [characterData, characterId]);
 
-const animatedStyle = useAnimatedStyle(() => {
-  return {
+  const opacity = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
+  }));
+
+  const [displayedText, setDisplayedText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const variantStyles = {
+    default: {
+      wrap: styles.defaultWrap,
+      portrait: styles.defaultPortrait,
+      heading: styles.defaultHeading,
+      card: styles.defaultCard,
+      bodyText: styles.defaultBodyText,
+      hint: styles.defaultHint,
+    },
+    vn: {
+      wrap: styles.vnWrap,
+      portrait: styles.vnPortrait,
+      heading: styles.vnHeading,
+      card: styles.vnCard,
+      bodyText: styles.vnBodyText,
+      hint: styles.vnHint,
+    },
+    overlay: {
+      wrap: styles.overlayWrap,
+      portrait: styles.overlayPortrait,
+      heading: styles.overlayHeading,
+      card: styles.overlayCard,
+      bodyText: styles.overlayBodyText,
+      hint: styles.overlayHint,
+    },
   };
-});
 
-const [displayedText, setDisplayedText] = useState('');
-const [currentIndex, setCurrentIndex] = useState(0);
+  const palette = variantStyles[variant] || variantStyles.default;
+  const portraitSource = portraitOverride || imageMap[speaker.portrait];
+  const hintLabel = continueHint ?? (onPress ? 'Tap to continue' : null);
 
+  useEffect(() => {
+    opacity.value = 0;
+    opacity.value = withTiming(1, { duration: 250 });
+    setDisplayedText('');
+    setCurrentIndex(0);
+  }, [txt, opacity]);
 
-useEffect(() => {
-  opacity.value = withTiming(1, { duration: 1000 });
-  if (currentIndex < txt.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedText((prev) => prev + txt[currentIndex]);
-        setCurrentIndex((prev) => prev + 1);
-      }, speed);
+  useEffect(() => {
+    if (!txt || currentIndex >= txt.length) return undefined;
 
-      return () => clearTimeout(timeout); 
-    }
-  }, [currentIndex, speed]);
+    const timeout = setTimeout(() => {
+      setDisplayedText((prev) => prev + txt[currentIndex]);
+      setCurrentIndex((prev) => prev + 1);
+    }, speed);
 
-useEffect(() => {
-  setDisplayedText('');
-  setCurrentIndex(0);
-}, [txt]);
-
-  // sets invisible on click
-  const [visable, setVisable] = useState(true)
+    return () => clearTimeout(timeout);
+  }, [currentIndex, txt, speed]);
 
   const handlePress = () => {
-  // skip to end if text is still displaying
-  if (currentIndex < txt.length) {
-    setDisplayedText(txt);
-    setCurrentIndex(txt.length);
-  } else {
-    // If text is finished, tell the parent to move to the next box
-    if (onPress) onPress(); 
-  }
-};
-  
-  // only returns if visible 
-  if (!visable) {
-    return null;
-  }
-  return (
-    <View style={{ alignItems: 'center', marginBottom: 20 }}>
-      
-      <View style={styles.portraitContainer}>
-        {speaker.portrait ? (
-          <Image source={imageMap[speaker.portrait]} style={styles.portrait} />
-        ) : (
-          <View style={styles.portraitPlaceholder} /> 
-        )}
-      </View>
+    if (currentIndex < txt.length) {
+      setDisplayedText(txt);
+      setCurrentIndex(txt.length);
+      return;
+    }
 
-      <Pressable onPress={handlePress}>
-      <Text style={styles.heading}>
-        {speaker.name}
-      </Text>
-      <View 
-        style={[
-          styles.card, 
-          style
-        ]}
-        {...props}
-      >
-        <AnimatedText style={[animatedStyle]}>{displayedText}</AnimatedText>
-      </View>
+    onPress?.();
+  };
+
+  return (
+    <View style={[styles.outerWrap, palette.wrap]}>
+      {showPortrait && (
+        <View style={styles.portraitContainer}>
+          {portraitSource ? (
+            <Image source={portraitSource} style={[styles.basePortrait, palette.portrait]} />
+          ) : (
+            <View style={[styles.portraitPlaceholder, palette.portrait]} />
+          )}
+        </View>
+      )}
+
+      <Pressable onPress={handlePress} disabled={!onPress && currentIndex >= txt.length}>
+        <Text style={[styles.baseHeading, palette.heading]}>{speaker.name}</Text>
+
+        <View style={[styles.baseCard, palette.card, style]} {...props}>
+          <AnimatedText style={[palette.bodyText, animatedStyle]}>{displayedText}</AnimatedText>
+          {children}
+        </View>
+
+        {hintLabel ? <Text style={[styles.baseHint, palette.hint]}>{hintLabel}</Text> : null}
       </Pressable>
     </View>
   );
@@ -106,48 +128,131 @@ useEffect(() => {
 export default DialogBox;
 
 const styles = StyleSheet.create({
-    portraitContainer: {
-      width: 64,
-      height: 64,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: 10,
-    },
-    portrait: {
-      width: 64,
-      height: 64,
-      marginBottom: 10,
-      borderWidth: 2,
-      borderColor: '#4d3a69',
-      borderRadius: 32, //circle
-      backgroundColor: '#8b5cf6', // Helps see if box is there
-    },
-    card: {
-      padding: 20,
-      height: 150,
-      width: 350,
-      //minWidth: 280,
-      //maxWidth: 320,
-      borderRadius: 18,
-      //backgroundColor: '#2a1e3b',
-      backgroundColor: '#8b5cf6',
-      borderWidth: 1,
-      borderColor: '#4d3a69',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
-      elevation: 5,
-    },
-    heading: {
-      fontWeight: '800', 
-      fontSize: 22,
-      textAlign: 'left',
-      marginBottom: 10,
-      color: '#f6f0ff', 
-    },
-    bodyText: {
-      color: '#d7caeb', 
-      fontSize: 15,
-    }
+  outerWrap: {
+    width: '100%',
+  },
+  portraitContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  basePortrait: {
+    borderWidth: 2,
+    borderRadius: 32,
+  },
+  portraitPlaceholder: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    opacity: 0.3,
+  },
+  baseHeading: {
+    fontWeight: '800',
+  },
+  baseCard: {
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  baseHint: {
+    marginTop: 8,
+    fontWeight: '700',
+    fontSize: 12,
+    textAlign: 'right',
+  },
+  defaultWrap: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  defaultPortrait: {
+    width: 64,
+    height: 64,
+    borderColor: '#4d3a69',
+    backgroundColor: '#8b5cf6',
+  },
+  defaultHeading: {
+    fontSize: 22,
+    textAlign: 'left',
+    marginBottom: 10,
+    color: '#f6f0ff',
+  },
+  defaultCard: {
+    padding: 20,
+    minHeight: 150,
+    width: 350,
+    borderRadius: 18,
+    backgroundColor: '#8b5cf6',
+    borderColor: '#4d3a69',
+  },
+  defaultBodyText: {
+    color: '#d7caeb',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  defaultHint: {
+    color: '#cdbcf3',
+  },
+  vnWrap: {
+    width: '100%',
+  },
+  vnPortrait: {
+    width: 116,
+    height: 116,
+    borderColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: 'rgba(32,20,52,0.95)',
+  },
+  vnHeading: {
+    fontSize: 28,
+    color: '#f7f0ff',
+    marginBottom: 14,
+    letterSpacing: 0.2,
+  },
+  vnCard: {
+    borderRadius: 24,
+    paddingHorizontal: 22,
+    paddingVertical: 20,
+    backgroundColor: 'rgba(18, 12, 30, 0.9)',
+    borderColor: 'rgba(231, 218, 255, 0.16)',
+  },
+  vnBodyText: {
+    color: '#f1e9ff',
+    fontSize: 18,
+    lineHeight: 27,
+  },
+  vnHint: {
+    color: '#d7c7ff',
+  },
+  overlayWrap: {
+    width: '100%',
+  },
+  overlayPortrait: {
+    width: 84,
+    height: 84,
+    borderColor: 'rgba(217,244,255,0.2)',
+    backgroundColor: 'rgba(20, 28, 43, 0.9)',
+  },
+  overlayHeading: {
+    fontSize: 20,
+    color: '#effbff',
+    marginBottom: 10,
+  },
+  overlayCard: {
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    backgroundColor: 'rgba(12, 18, 29, 0.92)',
+    borderColor: 'rgba(190, 231, 255, 0.2)',
+  },
+  overlayBodyText: {
+    color: '#eefcff',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  overlayHint: {
+    color: '#bfeaff',
+  },
 });

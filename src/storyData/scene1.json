@@ -1,4 +1,12 @@
 {
+  "flashIntro": {
+    "character": "system",
+    "txt": "",
+    "effect": "flash",
+    "durationMs": 2000,
+    "autoAdvance": true,
+    "next": "start"
+  },
   "start": {
     "character": "fox",
     "txt": "Did it work???",
@@ -20,13 +28,19 @@
   "rumble": {
     "character": "system",
     "txt": "...",
-    "next": "whatWasThat",
     "effect": "shake",
-    "autoAdvance": true
+    "durationMs": 2000,
+    "autoAdvance": true,
+    "next": "whatWasThat"
   },
   "whatWasThat": {
     "character": "player",
     "txt": "What was that?!",
+    "next": "followMe"
+  },
+  "followMe": {
+    "character": "fox",
+    "txt": "No Time! Follow me!",
     "next": "scene2"
   }
 }

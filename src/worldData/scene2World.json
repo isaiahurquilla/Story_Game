@@ -1,28 +1,45 @@
 {
   "world": {
-    "width": 1400,
+    "width": 2200,
     "height": 900,
     "theme": "forest_escape"
   },
   "spawn": {
-    "x": 160,
+    "x": 120,
     "y": 620
   },
   "npcs": [
     {
-      "id": "wolf",
-      "x": 980,
-      "y": 360,
-      "interactionNode": "start"
+      "id": "fox",
+      "x": 250,
+      "y": 620,
+      "interactionNode": "talkFox"
+    }
+  ],
+  "objects": [
+    {
+      "id": "fallenLog",
+      "label": "Cover",
+      "x": 1560,
+      "y": 610,
+      "width": 180,
+      "height": 110
     }
   ],
   "colliders": [
     {
       "id": "rock1",
-      "x": 420,
-      "y": 480,
-      "width": 140,
+      "x": 560,
+      "y": 500,
+      "width": 150,
       "height": 100
+    },
+    {
+      "id": "rock2",
+      "x": 1100,
+      "y": 470,
+      "width": 170,
+      "height": 110
     }
   ],
   "exits": []
