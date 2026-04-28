@@ -1,4 +1,7 @@
 {
+  "metadata": {
+    "background": "forest_night_bg"
+  },
   "start": {
     "character": "fox",
     "txt": "No time to explain, we need to get out of here!"

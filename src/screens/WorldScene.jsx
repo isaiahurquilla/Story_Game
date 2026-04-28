@@ -8,6 +8,7 @@ import {
   Platform,
   Image,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import DialogBox from '../components/DialogBox';
 import PlayerChoice from '../components/PlayerChoice';
@@ -27,6 +28,7 @@ import { getMovementVector, getFacingFromVector } from '../systems/PlayerControl
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
 import { getNearbyNpc, getTouchedExit } from '../systems/InteractionSystem';
+import { backgroundMap } from '../assets/backgrounds/backgroundMap';
 
 const PLAYER_SIZE = 64;
 const MOVE_SPEED = 4;
@@ -320,8 +322,16 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
     return <View style={styles.root} />;
   }
 
+  const bgKey = storyData?.metadata?.background || 'default_bg';
+  const selectedBg = backgroundMap[bgKey];
+
   return (
     <View style={styles.root}>
+      <ImageBackground 
+        source={selectedBg} 
+        style={styles.backgroundImage} 
+        resizeMode="cover"
+      >
       <Animated.View style={[styles.container, { transform: [{ translateX: shakeAnim }] }]}>
         <TouchableOpacity style={styles.topMenuButton} onPress={onGoToMenu}>
           <Text style={styles.topMenuButtonText}>Exit</Text>
@@ -428,6 +438,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
           </TouchableOpacity>
         )}
       </Animated.View>
+      </ImageBackground>
 
       {flashVisible && <View pointerEvents="none" style={styles.flashOverlay} />}
     </View>
@@ -439,22 +450,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1b1328',
   },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 28,
-    backgroundColor: '#1b1328',
+    // last number is for transparency
+    backgroundColor: 'rgba(27, 19, 40, 0.7)',
   },
   topMenuButton: {
     position: 'absolute',
     top: 16,
     right: 20,
     zIndex: 50,
-    backgroundColor: '#7a4fe0',
+    backgroundColor: '#8b5cf6', 
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#a78bfa',
   },
   topMenuButtonText: {
     color: '#fff',
@@ -467,8 +486,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     overflow: 'hidden',
     borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#89b9d6',
+    borderWidth: 3,
+    borderColor: '#4d3a69',
     backgroundColor: '#cfeeff',
     marginTop: 36,
     marginBottom: 12,
@@ -541,15 +560,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuButton: {
-    padding: 15,
-    backgroundColor: '#7a4fe0',
-    borderRadius: 8,
+    backgroundColor: '#8b5cf6',
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: 'center',
     marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#a78bfa',
   },
   menuButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '800',
   },
   flashOverlay: {
     ...StyleSheet.absoluteFillObject,
