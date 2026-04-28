@@ -1,4 +1,7 @@
 {
+  "metadata": {
+    "background": "forest_bg"
+  },
   "start": {
     "character": "fox",
     "txt": "Did it work???",

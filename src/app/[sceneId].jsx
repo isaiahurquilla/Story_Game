@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Alert, Platform } from 'react-native';
+import { ImageBackground, View, StyleSheet, TouchableOpacity, Text, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DialogBox from '../components/DialogBox';
 import PlayerChoice from '../components/PlayerChoice';
 import PlayerSprite from '../components/PlayerSprite';
 import { loadGameForProfile, saveGameForProfile, addCurrency, spendCurrency } from '../services/profileService';
 import characterList from '../assets/characters.json';
+import { backgroundMap } from '../assets/backgrounds';
 
 const DEFAULT_NODE = 'start';
 const PLAYER_SIZE = 56;
@@ -195,8 +196,16 @@ const SceneTemplate = () => {
 
   const data = currentSceneData[currentNode];
 
+  //get the background image
+  const bgKey = currentSceneData.metadata?.background || 'default_bg';
+  const selectedBg = backgroundMap[bgKey];
+
   return (
-    <View style={styles.container}>
+    <ImageBackground source={selectedBg} 
+      style={styles.background} // The background fills the container
+      resizeMode="cover"
+    >
+    <View style={styles.overlay}>
       <View style={styles.viewport}>
         <View
           style={[
@@ -246,15 +255,28 @@ const SceneTemplate = () => {
         onPress={!data.choices ? () => handleSelect(data.next) : null}
       />
     </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  //container: {
+    //flex: 1,
+    //padding: 20,
+    //paddingBottom: 60,
+    //backgroundColor: '#1b1328',
+  //},
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
     flex: 1,
     padding: 20,
     paddingBottom: 60,
-    backgroundColor: '#1b1328',
+    backgroundColor: 'rgba(27, 19, 40, 0.7)', // Deep purple tint
+    justifyContent: 'flex-end',
   },
   viewport: {
     width: VIEWPORT_WIDTH,
