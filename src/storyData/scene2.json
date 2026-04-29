@@ -1,8 +1,4 @@
 {
-  "metadata": {
-    "background": "forest_night_bg"
-  },
-  "start": {
   "talkFox": {
     "character": "fox",
     "txt": "Keep up! We are not stopping yet.",
