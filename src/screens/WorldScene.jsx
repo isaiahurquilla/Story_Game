@@ -8,6 +8,7 @@ import {
   Platform,
   Image,
   Alert,
+  ImageBackground,
   useWindowDimensions,
 } from 'react-native';
 import DialogBox from '../components/DialogBox';
@@ -30,6 +31,7 @@ import { getMovementVector, getFacingFromVector } from '../systems/PlayerControl
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
 import { getNearbyNpc, getTouchedExit } from '../systems/InteractionSystem';
+import { backgroundMap } from '../assets/backgrounds/backgroundMap';
 
 const PLAYER_SIZE = 64;
 const MOVE_SPEED = 4;
@@ -906,6 +908,7 @@ const dialogueCharacters = useMemo(
           </View>
         ) : null}
       </Animated.View>
+      </ImageBackground>
 
       {flashVisible && <View pointerEvents="none" style={styles.flashOverlay} />}
     </View>
@@ -915,18 +918,32 @@ const dialogueCharacters = useMemo(
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    backgroundColor: '#1b1328',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 28,
+    // last number is for transparency
+    backgroundColor: 'rgba(27, 19, 40, 0.7)',
   },
   topMenuButton: {
     position: 'absolute',
     top: 16,
     right: 20,
     zIndex: 50,
-    backgroundColor: 'rgba(21, 21, 33, 0.84)',
+    backgroundColor: '#8b5cf6', 
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: '#a78bfa',
   },
   topMenuButtonText: {
     color: '#fff',
@@ -1026,13 +1043,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     overflow: 'hidden',
     borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#89b9d6',
-  },
-  viewportFull: {
-    alignSelf: 'stretch',
-    borderRadius: 0,
-    borderWidth: 0,
+    borderWidth: 3,
+    borderColor: '#4d3a69',
+    backgroundColor: '#cfeeff',
+    marginTop: 36,
+    marginBottom: 12,
   },
   world: {
     position: 'relative',
@@ -1148,17 +1163,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 14,
   },
-  interactButtonText: {
-    color: '#f0fbff',
-    fontWeight: '900',
-    fontSize: 15,
+  menuButton: {
+    backgroundColor: '#8b5cf6',
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#a78bfa',
   },
-  gameplayDialogueWrap: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 16,
-    gap: 10,
+  menuButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '800',
   },
   flashOverlay: {
     ...StyleSheet.absoluteFillObject,
