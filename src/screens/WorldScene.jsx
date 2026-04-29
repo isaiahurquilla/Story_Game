@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,15 +9,18 @@ import {
   Image,
   Alert,
   ImageBackground,
+  useWindowDimensions,
 } from 'react-native';
 import DialogBox from '../components/DialogBox';
 import PlayerChoice from '../components/PlayerChoice';
 import PlayerSprite from '../components/PlayerSprite';
+import InteractPrompt from '../components/InteractPrompt';
 import {
   loadGameForProfile,
   saveGameForProfile,
   addCurrency,
   spendCurrency,
+  getProfileById,
 } from '../services/profileService';
 import characters from '../assets/characters.json';
 import scene1Story from '../storyData/scene1.json';
@@ -32,13 +35,49 @@ import { backgroundMap } from '../assets/backgrounds/backgroundMap';
 
 const PLAYER_SIZE = 64;
 const MOVE_SPEED = 4;
-const VIEWPORT_WIDTH = 360;
-const VIEWPORT_HEIGHT = 260;
-const DEFAULT_NODE = 'start';
+const LEADER_SPEED = 2.4;
+const SAVE_DEBOUNCE_MS = 350;
 
-const PLAYER_SPRITE = require('../assets/images/hare.png');
-const FOX_SPRITE = require('../assets/images/fox.png');
-const WOLF_SPRITE = require('../assets/images/wolf.png');
+const PLAYER_ANIMATION_SET = {
+  idle: require('../assets/sprites/Dude_Monster/Dude_Monster_Idle_4.png'),
+  walk: require('../assets/sprites/Dude_Monster/Dude_Monster_Walk_6.png'),
+  run: require('../assets/sprites/Dude_Monster/Dude_Monster_Run_6.png'),
+  frameWidth: 32,
+  frameHeight: 32,
+  frameCounts: {
+    idle: 4,
+    walk: 6,
+    run: 6,
+  },
+};
+
+const SIDEKICK_ANIMATION_SET = {
+  idle: require('../assets/sprites/Pink_Monster/Pink_Monster_Idle_4.png'),
+  walk: require('../assets/sprites/Pink_Monster/Pink_Monster_Walk_6.png'),
+  run: require('../assets/sprites/Pink_Monster/Pink_Monster_Run_6.png'),
+  frameWidth: 32,
+  frameHeight: 32,
+  frameCounts: {
+    idle: 4,
+    walk: 6,
+    run: 6,
+  },
+};
+
+const SCENE_BACKGROUND_MAP = {
+  scene2: require('../assets/backgrounds/scene2-bg.png'),
+};
+
+const NPC_ANIMATION_MAP = {
+  fox: SIDEKICK_ANIMATION_SET,
+  wolf: SIDEKICK_ANIMATION_SET,
+};
+
+const NPC_PORTRAIT_MAP = {
+  fox: require('../assets/images/fox.png'),
+  wolf: require('../assets/images/wolf.png'),
+  hare: require('../assets/images/hare.png'),
+};
 
 const storyMap = {
   scene1: scene1Story,
@@ -50,84 +89,194 @@ const worldMap = {
   scene2: scene2World,
 };
 
-const npcSpriteMap = {
-  fox: FOX_SPRITE,
-  wolf: WOLF_SPRITE,
+const sceneConfigMap = {
+  scene1: {
+    layout: 'vn',
+    startNode: 'flashIntro',
+    topLabel: 'SCENE 1',
+    title: 'Did it work?',
+    subtitle: 'A portrait-heavy opening scene with choices, a flash, and a long shake.',
+    hint: 'Tap the dialogue box to advance.',
+    palette: {
+      background: '#120c1e',
+      panel: '#1d1230',
+      accent: '#d3b7ff',
+      accentSoft: 'rgba(152, 105, 255, 0.18)',
+      cardBorder: 'rgba(216, 196, 255, 0.42)',
+      overlayOne: 'rgba(255, 122, 89, 0.18)',
+      overlayTwo: 'rgba(119, 77, 255, 0.22)',
+    },
+  },
+  scene2: {
+    layout: 'gameplay',
+    startNode: null,
+    leaderNpcId: 'fox',
+    leaderGoalId: 'fallenLog',
+    arrivalNode: 'afterRun',
+    topLabel: 'SCENE 2',
+    title: 'Run',
+    subtitle: 'The side character takes off. Follow with WASD while the world scrolls full screen.',
+    hint: 'Use W A S D to follow. Press E or tap Talk near the side character.',
+    palette: {
+      background: '#08131b',
+      panel: 'rgba(10, 16, 24, 0.76)',
+      accent: '#bfefff',
+      accentSoft: 'rgba(99, 214, 255, 0.18)',
+      cardBorder: 'rgba(176, 233, 255, 0.34)',
+      overlayOne: 'rgba(72, 161, 120, 0.18)',
+      overlayTwo: 'rgba(58, 94, 176, 0.16)',
+    },
+  },
 };
+
+const createDefaultLeaderState = (sceneId) => ({
+  active: sceneId === 'scene2',
+  finished: false,
+});
 
 const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => {
   const normalizedSceneId = sceneId?.toLowerCase();
   const storyData = storyMap[normalizedSceneId];
   const worldData = worldMap[normalizedSceneId];
+  const sceneConfig = sceneConfigMap[normalizedSceneId] || sceneConfigMap.scene2;
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const [ready, setReady] = useState(false);
   const [currentNode, setCurrentNode] = useState(null);
   const [history, setHistory] = useState([]);
   const [claimedRewards, setClaimedRewards] = useState([]);
   const [playerPos, setPlayerPos] = useState(worldData?.spawn || { x: 100, y: 100 });
+  const [npcPositions, setNpcPositions] = useState(worldData?.npcs || []);
+  const [leaderState, setLeaderState] = useState(createDefaultLeaderState(normalizedSceneId));
   const [cameraPos, setCameraPos] = useState({ x: 0, y: 0 });
   const [facing, setFacing] = useState('down');
   const [flashVisible, setFlashVisible] = useState(false);
   const [interactionTarget, setInteractionTarget] = useState(null);
+  const [profileName, setProfileName] = useState('Player');
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const autoAdvanceTimeout = useRef(null);
   const animationFrameRef = useRef(null);
+  const leaderFrameRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
+  const flashTimeoutRef = useRef(null);
+  const shakeTimeoutRef = useRef(null);
+  const shakeLoopRef = useRef(null);
   const keysPressed = useRef({ w: false, a: false, s: false, d: false });
 
   const worldWidth = worldData?.world?.width || 1400;
   const worldHeight = worldData?.world?.height || 900;
 
+  const viewportWidth = sceneConfig.layout === 'vn' ? Math.min(screenWidth - 28, 760) : screenWidth;
+  const viewportHeight = sceneConfig.layout === 'vn' ? Math.min(screenHeight * 0.34, 320) : screenHeight;
+
   const activeNode = currentNode ? storyData?.[currentNode] : null;
+  const canMove = ready && sceneConfig.layout !== 'vn' && !currentNode;
+
+  const isPlayerMoving =
+    canMove &&
+    (keysPressed.current.w ||
+      keysPressed.current.a ||
+      keysPressed.current.s ||
+      keysPressed.current.d);
+
+const dialogueCharacters = useMemo(
+  () => ({
+    ...characters,
+    fox: {
+      ...characters.fox,
+      name: 'Side_Character',
+    },
+    player: {
+      name: profileName || 'Player',
+      portrait: 'hare_image',
+    },
+    system: {
+      name: ' ',
+      portrait: null,
+    },
+  }),
+  [profileName]
+);
+
+  const activeSpeakerId = activeNode?.character || null;
+  const speakerPortrait = activeSpeakerId ? NPC_PORTRAIT_MAP[activeSpeakerId] || null : null;
 
   const npcViews = useMemo(() => {
-    return (worldData?.npcs || []).map((npc) => ({
+    return npcPositions.map((npc) => ({
       ...npc,
-      sprite: npcSpriteMap[npc.id],
+      animationSet: NPC_ANIMATION_MAP[npc.id] || SIDEKICK_ANIMATION_SET,
+      portraitSource: NPC_PORTRAIT_MAP[npc.id] || null,
     }));
-  }, [worldData]);
+  }, [npcPositions]);
+
+  const beginNpcInteraction = useCallback(() => {
+    if (!interactionTarget || currentNode) return;
+    setCurrentNode(interactionTarget.interactionNode || 'start');
+  }, [interactionTarget, currentNode]);
 
   useEffect(() => {
     const setup = async () => {
-      if (!storyData || !worldData) {
-        setReady(true);
-        return;
-      }
+  if (!storyData || !worldData) {
+    setReady(true);
+    return;
+  }
 
-      const defaultSpawn = worldData.spawn || { x: 100, y: 100 };
-      let nextNode = DEFAULT_NODE;
-      let nextHistory = [];
-      let nextClaimedRewards = [];
-      let nextPlayerPos = defaultSpawn;
+  const defaultSpawn = worldData.spawn || { x: 100, y: 100 };
+  const defaultNpcs = worldData.npcs || [];
 
-      if (mode === 'load' && profileId) {
-        const savedGame = await loadGameForProfile(profileId);
-        if (savedGame?.sceneId === normalizedSceneId) {
-          nextNode = savedGame.currentNode ?? nextNode;
-          nextHistory = savedGame.history || [];
-          nextClaimedRewards = savedGame.claimedRewards || [];
-          nextPlayerPos = savedGame.playerPos || defaultSpawn;
-        }
-      }
+  let nextProfileName = 'Player';
 
-      setCurrentNode(nextNode);
-      setHistory(nextHistory);
-      setClaimedRewards(nextClaimedRewards);
-      setPlayerPos(nextPlayerPos);
-      setReady(true);
-    };
+  if (profileId) {
+    const profile = await getProfileById(profileId);
+    nextProfileName = profile?.name?.trim() || 'Player';
+  }
+
+  let nextNode = sceneConfig.startNode ?? null;
+  let nextHistory = [];
+  let nextClaimedRewards = [];
+  let nextPlayerPos = defaultSpawn;
+  let nextNpcPositions = defaultNpcs;
+  let nextLeaderState = createDefaultLeaderState(normalizedSceneId);
+
+  if (mode === 'load' && profileId) {
+    const savedGame = await loadGameForProfile(profileId);
+
+    if (savedGame?.sceneId === normalizedSceneId) {
+      nextNode = savedGame.currentNode ?? nextNode;
+      nextHistory = savedGame.history || [];
+      nextClaimedRewards = savedGame.claimedRewards || [];
+      nextPlayerPos = savedGame.playerPos || defaultSpawn;
+      nextNpcPositions = savedGame.npcPositions || defaultNpcs;
+      nextLeaderState = savedGame.leaderState || nextLeaderState;
+    }
+  }
+
+  setProfileName(nextProfileName);
+  setCurrentNode(nextNode);
+  setHistory(nextHistory);
+  setClaimedRewards(nextClaimedRewards);
+  setPlayerPos(nextPlayerPos);
+  setNpcPositions(nextNpcPositions);
+  setLeaderState(nextLeaderState);
+  setReady(true);
+};
 
     setup();
-  }, [normalizedSceneId, profileId, mode, storyData, worldData]);
+  }, [normalizedSceneId, profileId, mode, storyData, worldData, sceneConfig.startNode]);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) return undefined;
 
     const handleKeyDown = (event) => {
       const key = event.key?.toLowerCase();
 
       if (['w', 'a', 's', 'd'].includes(key)) {
         keysPressed.current[key] = true;
+      }
+
+      if ((key === 'e' || key === 'enter') && !currentNode) {
+        beginNpcInteraction();
       }
     };
 
@@ -148,13 +297,15 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
         window.removeEventListener('keyup', handleKeyUp);
       };
     }
-  }, [ready]);
+
+    return undefined;
+  }, [ready, currentNode, beginNpcInteraction]);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) return undefined;
 
     const tick = () => {
-      if (!currentNode) {
+      if (canMove) {
         const { dx, dy } = getMovementVector(keysPressed.current, MOVE_SPEED);
 
         setPlayerPos((prev) => {
@@ -189,15 +340,72 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [ready, currentNode, worldData, worldWidth, worldHeight, facing]);
+  }, [ready, canMove, worldData, worldWidth, worldHeight, facing]);
+
+  useEffect(() => {
+    if (!ready || !sceneConfig.leaderNpcId || !sceneConfig.leaderGoalId) return undefined;
+    if (!leaderState.active || currentNode) return undefined;
+
+    const goal = (worldData?.objects || []).find((item) => item.id === sceneConfig.leaderGoalId);
+    if (!goal) return undefined;
+
+    const tickLeader = () => {
+      let reachedGoal = false;
+
+      setNpcPositions((prev) =>
+        prev.map((npc) => {
+          if (npc.id !== sceneConfig.leaderNpcId) return npc;
+
+          const targetX = goal.x;
+          const targetY = goal.y;
+          const dx = targetX - npc.x;
+          const dy = targetY - npc.y;
+          const distance = Math.hypot(dx, dy);
+
+          if (distance <= LEADER_SPEED || distance === 0) {
+            reachedGoal = true;
+            return {
+              ...npc,
+              x: targetX,
+              y: targetY,
+            };
+          }
+
+          return {
+            ...npc,
+            x: npc.x + (dx / distance) * LEADER_SPEED,
+            y: npc.y + (dy / distance) * LEADER_SPEED,
+          };
+        })
+      );
+
+      if (reachedGoal) {
+        setLeaderState({ active: false, finished: true });
+        if (sceneConfig.arrivalNode && storyData?.[sceneConfig.arrivalNode]) {
+          setCurrentNode(sceneConfig.arrivalNode);
+        }
+        return;
+      }
+
+      leaderFrameRef.current = requestAnimationFrame(tickLeader);
+    };
+
+    leaderFrameRef.current = requestAnimationFrame(tickLeader);
+
+    return () => {
+      if (leaderFrameRef.current) {
+        cancelAnimationFrame(leaderFrameRef.current);
+      }
+    };
+  }, [ready, currentNode, leaderState.active, worldData, storyData, sceneConfig.leaderNpcId, sceneConfig.leaderGoalId, sceneConfig.arrivalNode]);
 
   useEffect(() => {
     setCameraPos(
       getCameraPosition({
         playerPos,
         playerSize: PLAYER_SIZE,
-        viewportWidth: VIEWPORT_WIDTH,
-        viewportHeight: VIEWPORT_HEIGHT,
+        viewportWidth,
+        viewportHeight,
         worldWidth,
         worldHeight,
       })
@@ -206,7 +414,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
     const nearbyNpc = getNearbyNpc({
       playerPos,
       playerSize: PLAYER_SIZE,
-      npcs: worldData?.npcs || [],
+      npcs: npcPositions,
     });
 
     setInteractionTarget(nearbyNpc || null);
@@ -220,36 +428,63 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
     if (touchedExit && !currentNode) {
       onChangeScene?.(touchedExit.targetScene);
     }
-  }, [playerPos, currentNode, worldData, worldWidth, worldHeight, onChangeScene]);
+  }, [playerPos, currentNode, npcPositions, worldData, worldWidth, worldHeight, viewportWidth, viewportHeight, onChangeScene]);
 
   useEffect(() => {
-    if (!activeNode) return;
+    if (!activeNode) return undefined;
 
     if (autoAdvanceTimeout.current) {
       clearTimeout(autoAdvanceTimeout.current);
       autoAdvanceTimeout.current = null;
     }
 
+    if (flashTimeoutRef.current) {
+      clearTimeout(flashTimeoutRef.current);
+      flashTimeoutRef.current = null;
+    }
+
+    if (shakeTimeoutRef.current) {
+      clearTimeout(shakeTimeoutRef.current);
+      shakeTimeoutRef.current = null;
+    }
+
+    if (shakeLoopRef.current) {
+      shakeLoopRef.current.stop();
+      shakeLoopRef.current = null;
+      shakeAnim.setValue(0);
+    }
+
+    const effectDuration = activeNode.durationMs ?? (activeNode.effect ? 1600 : 700);
+
     if (activeNode.effect === 'flash') {
       setFlashVisible(true);
-      setTimeout(() => setFlashVisible(false), 2000);
+      flashTimeoutRef.current = setTimeout(() => setFlashVisible(false), effectDuration);
     }
 
     if (activeNode.effect === 'shake') {
-      Animated.sequence([
-        Animated.timing(shakeAnim, { toValue: 10, duration: 80, useNativeDriver: true }),
-        Animated.timing(shakeAnim, { toValue: -10, duration: 80, useNativeDriver: true }),
-        Animated.timing(shakeAnim, { toValue: 8, duration: 80, useNativeDriver: true }),
-        Animated.timing(shakeAnim, { toValue: -8, duration: 80, useNativeDriver: true }),
-        Animated.timing(shakeAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
-      ]).start();
+      shakeAnim.setValue(0);
+      shakeLoopRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(shakeAnim, { toValue: 10, duration: 80, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: -10, duration: 80, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: 8, duration: 80, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: -8, duration: 80, useNativeDriver: true }),
+        ])
+      );
+      shakeLoopRef.current.start();
+      shakeTimeoutRef.current = setTimeout(() => {
+        if (shakeLoopRef.current) {
+          shakeLoopRef.current.stop();
+          shakeLoopRef.current = null;
+        }
+        shakeAnim.setValue(0);
+      }, effectDuration);
     }
 
     if (activeNode.autoAdvance && activeNode.next) {
-      const delay = activeNode.effect ? 1600 : 700;
       autoAdvanceTimeout.current = setTimeout(() => {
         handleSelect(activeNode.next);
-      }, delay);
+      }, effectDuration);
     }
 
     return () => {
@@ -257,16 +492,33 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
         clearTimeout(autoAdvanceTimeout.current);
         autoAdvanceTimeout.current = null;
       }
+      if (flashTimeoutRef.current) {
+        clearTimeout(flashTimeoutRef.current);
+        flashTimeoutRef.current = null;
+      }
+      if (shakeTimeoutRef.current) {
+        clearTimeout(shakeTimeoutRef.current);
+        shakeTimeoutRef.current = null;
+      }
+      if (shakeLoopRef.current) {
+        shakeLoopRef.current.stop();
+        shakeLoopRef.current = null;
+        shakeAnim.setValue(0);
+      }
     };
-  }, [activeNode]);
+  }, [activeNode, shakeAnim]);
 
   useEffect(() => {
-    const sync = async () => {
-      if (!ready || !profileId) return;
+    if (!ready || !profileId) return undefined;
 
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(async () => {
       let updatedClaimedRewards = claimedRewards;
 
-      if (activeNode?.reward && !claimedRewards.includes(currentNode)) {
+      if (activeNode?.reward && currentNode && !claimedRewards.includes(currentNode)) {
         await addCurrency(profileId, activeNode.reward);
         updatedClaimedRewards = [...claimedRewards, currentNode];
         setClaimedRewards(updatedClaimedRewards);
@@ -278,11 +530,17 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
         history,
         claimedRewards: updatedClaimedRewards,
         playerPos,
+        npcPositions,
+        leaderState,
       });
-    };
+    }, SAVE_DEBOUNCE_MS);
 
-    sync();
-  }, [ready, profileId, normalizedSceneId, currentNode, activeNode, history, claimedRewards, playerPos]);
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [ready, profileId, normalizedSceneId, currentNode, activeNode, history, claimedRewards, playerPos, npcPositions, leaderState]);
 
   const handleSelect = async (nextNodeID, choiceLabel = null, cost = 0) => {
     if (!nextNodeID) {
@@ -318,125 +576,337 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
     }
   };
 
+  const worldThemeStyle = useMemo(() => {
+    const theme = worldData?.world?.theme;
+
+    if (theme === 'forest_escape') {
+      return {
+        sky: '#84d7ff',
+        ground: '#97d2a3',
+        path: '#cfbc8a',
+        pathSecondary: '#b7ab7c',
+        collider: '#547c4c',
+        exit: 'rgba(255,255,255,0.16)',
+        object: 'rgba(94, 63, 24, 0.95)',
+        objectAccent: 'rgba(255, 236, 168, 0.95)',
+      };
+    }
+
+    return {
+      sky: '#bbe7ff',
+      ground: '#d7f0c8',
+      path: '#dcc290',
+      pathSecondary: '#ccb081',
+      collider: '#4d9a58',
+      exit: 'rgba(122,79,224,0.08)',
+      object: 'rgba(94, 63, 24, 0.95)',
+      objectAccent: 'rgba(255, 236, 168, 0.95)',
+    };
+  }, [worldData]);
+
+  const renderWorld = () => (
+    <View
+      style={[
+        styles.viewport,
+        sceneConfig.layout !== 'vn' && styles.viewportFull,
+        {
+          width: viewportWidth,
+          height: viewportHeight,
+          backgroundColor: worldThemeStyle.sky,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.world,
+          {
+            width: worldWidth,
+            height: worldHeight,
+            transform: [{ translateX: -cameraPos.x }, { translateY: -cameraPos.y }],
+          },
+        ]}
+      >
+        {SCENE_BACKGROUND_MAP[normalizedSceneId] ? (
+          <Image
+            source={SCENE_BACKGROUND_MAP[normalizedSceneId]}
+            style={styles.sceneBackground}
+            resizeMode="cover"
+          />
+        ) : (
+          <>
+            <View style={[styles.grass, { backgroundColor: worldThemeStyle.ground }]} />
+            <View style={[styles.pathOne, { backgroundColor: worldThemeStyle.path }]} />
+            <View style={[styles.pathTwo, { backgroundColor: worldThemeStyle.pathSecondary }]} />
+          </>
+        )}
+
+        {(worldData.colliders || []).map((collider) => (
+          <View
+            key={collider.id}
+            style={[
+              styles.colliderVisual,
+              {
+                left: collider.x,
+                top: collider.y,
+                width: collider.width,
+                height: collider.height,
+                backgroundColor: worldThemeStyle.collider,
+              },
+            ]}
+          />
+        ))}
+
+        {(worldData.objects || []).map((item) => (
+          <View
+            key={item.id}
+            style={[
+              styles.objectVisual,
+              {
+                left: item.x,
+                top: item.y,
+                width: item.width,
+                height: item.height,
+                backgroundColor: worldThemeStyle.object,
+              },
+            ]}
+          >
+            <Text style={[styles.objectLabel, { color: worldThemeStyle.objectAccent }]}>
+              {item.label || item.id}
+            </Text>
+          </View>
+        ))}
+
+        {npcViews.map((npc) => {
+          const npcState =
+            !currentNode && leaderState.active && npc.id === sceneConfig.leaderNpcId
+              ? 'run'
+              : 'idle';
+
+          return (
+            <View
+              key={npc.id}
+              style={[
+                styles.npcWrap,
+                {
+                  left: npc.x,
+                  top: npc.y,
+                },
+              ]}
+            >
+              <PlayerSprite
+                x={0}
+                y={0}
+                size={64}
+                animationSet={npc.animationSet}
+                state={npcState}
+                facing="right"
+                zIndex={16}
+                speedMs={130}
+              />
+              <Text style={styles.npcLabel}>
+                {dialogueCharacters[npc.id]?.name || npc.id}
+              </Text>
+            </View>
+          );
+        })}
+
+        {(worldData.exits || []).map((exit) => (
+          <View
+            key={exit.id}
+            style={[
+              styles.exitVisual,
+              {
+                left: exit.x,
+                top: exit.y,
+                width: exit.width,
+                height: exit.height,
+                backgroundColor: worldThemeStyle.exit,
+              },
+            ]}
+          />
+        ))}
+
+        <PlayerSprite
+          x={playerPos.x}
+          y={playerPos.y}
+          size={PLAYER_SIZE}
+          animationSet={PLAYER_ANIMATION_SET}
+          state={isPlayerMoving ? 'walk' : 'idle'}
+          facing={facing}
+          zIndex={20}
+          speedMs={140}
+        />
+      </View>
+    </View>
+  );
+
   if (!ready || !storyData || !worldData) {
     return <View style={styles.root} />;
   }
 
-  const bgKey = storyData?.metadata?.background || 'default_bg';
-  const selectedBg = backgroundMap[bgKey];
+  const speakerLabel = interactionTarget
+    ? dialogueCharacters[interactionTarget.id]?.name || interactionTarget.id
+    : 'someone';
+
+  if (sceneConfig.layout === 'vn') {
+    return (
+      <View style={[styles.root, { backgroundColor: sceneConfig.palette.background }]}>
+        <Animated.View style={[styles.vnContainer, { transform: [{ translateX: shakeAnim }] }]}>
+          <TouchableOpacity style={styles.topMenuButton} onPress={onGoToMenu}>
+            <Text style={styles.topMenuButtonText}>Exit</Text>
+          </TouchableOpacity>
+
+          <View
+            style={[
+              styles.vnStage,
+              {
+                backgroundColor: sceneConfig.palette.panel,
+                borderColor: sceneConfig.palette.cardBorder,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.vnBackdropGlow,
+                { backgroundColor: sceneConfig.palette.overlayOne },
+              ]}
+            />
+            <View
+              style={[
+                styles.vnBackdropGlowSecondary,
+                { backgroundColor: sceneConfig.palette.overlayTwo },
+              ]}
+            />
+
+            <View style={styles.vnStageTextWrap}>
+              <Text style={[styles.sceneOverline, { color: sceneConfig.palette.accent }]}>
+                {sceneConfig.topLabel}
+              </Text>
+              <Text style={styles.sceneTitle}>{sceneConfig.title}</Text>
+              <Text style={styles.sceneSubtitle}>{sceneConfig.subtitle}</Text>
+            </View>
+
+            {speakerPortrait ? (
+              <Image source={speakerPortrait} resizeMode="contain" style={styles.vnSpeakerVisual} />
+            ) : (
+              <View
+                style={[
+                  styles.vnSpeakerPlaceholder,
+                  { borderColor: sceneConfig.palette.cardBorder },
+                ]}
+              />
+            )}
+          </View>
+
+          <View
+            style={[
+              styles.vnDialoguePanel,
+              {
+                borderColor: sceneConfig.palette.cardBorder,
+                backgroundColor: 'rgba(10, 8, 19, 0.84)',
+              },
+            ]}
+          >
+            <Text style={[styles.vnHintLabel, { color: sceneConfig.palette.accent }]}>
+              {sceneConfig.hint}
+            </Text>
+
+            {activeNode?.choices ? (
+              <PlayerChoice
+                variant="vn"
+                choices={activeNode.choices}
+                onSelect={(id, label, cost) => handleSelect(id, label, cost)}
+              />
+            ) : null}
+
+            <DialogBox
+              variant="vn"
+              showPortrait={activeNode?.character !== 'system'}
+              characterId={activeNode?.character || 'system'}
+              characterData={dialogueCharacters}
+              txt={activeNode ? activeNode.txt : ''}
+              portraitOverride={speakerPortrait}
+              continueHint={activeNode && !activeNode.autoAdvance ? 'Tap to advance' : null}
+              onPress={
+                activeNode && !activeNode.choices && !activeNode.autoAdvance && activeNode.next
+                  ? () => handleSelect(activeNode.next)
+                  : null
+              }
+            />
+          </View>
+        </Animated.View>
+
+        {flashVisible && <View pointerEvents="none" style={styles.flashOverlay} />}
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.root}>
-      <ImageBackground 
-        source={selectedBg} 
-        style={styles.backgroundImage} 
-        resizeMode="cover"
-      >
-      <Animated.View style={[styles.container, { transform: [{ translateX: shakeAnim }] }]}>
+    <View style={[styles.root, { backgroundColor: sceneConfig.palette.background }]}>
+      <Animated.View style={[styles.gameplayContainer, { transform: [{ translateX: shakeAnim }] }]}>
+        {renderWorld()}
+
         <TouchableOpacity style={styles.topMenuButton} onPress={onGoToMenu}>
           <Text style={styles.topMenuButtonText}>Exit</Text>
         </TouchableOpacity>
 
-        <View style={styles.viewport}>
-          <View
-            style={[
-              styles.world,
-              {
-                width: worldWidth,
-                height: worldHeight,
-                transform: [
-                  { translateX: -cameraPos.x },
-                  { translateY: -cameraPos.y },
-                ],
-              },
-            ]}
-          >
-            <View style={styles.grass} />
-            <View style={styles.pathOne} />
-            <View style={styles.pathTwo} />
+        <View
+          style={[
+            styles.gameplayHud,
+            {
+              backgroundColor: sceneConfig.palette.panel,
+              borderColor: sceneConfig.palette.cardBorder,
+            },
+          ]}
+        >
+          <Text style={[styles.sceneOverline, { color: sceneConfig.palette.accent }]}>
+            {sceneConfig.topLabel}
+          </Text>
+          <Text style={styles.gameplayHudTitle}>{sceneConfig.title}</Text>
+          <Text style={styles.gameplayHudText}>{sceneConfig.hint}</Text>
+        </View>
 
-            {(worldData.colliders || []).map((collider) => (
-              <View
-                key={collider.id}
-                style={[
-                  styles.colliderVisual,
-                  {
-                    left: collider.x,
-                    top: collider.y,
-                    width: collider.width,
-                    height: collider.height,
-                  },
-                ]}
-              />
-            ))}
-
-            {npcViews.map((npc) => (
-              <View
-                key={npc.id}
-                style={[
-                  styles.npcWrap,
-                  {
-                    left: npc.x,
-                    top: npc.y,
-                  },
-                ]}
-              >
-                <Image source={npc.sprite} style={styles.npcSprite} resizeMode="contain" />
-                <Text style={styles.npcLabel}>{characters[npc.id]?.name || npc.id}</Text>
-              </View>
-            ))}
-
-            {(worldData.exits || []).map((exit) => (
-              <View
-                key={exit.id}
-                style={[
-                  styles.exitVisual,
-                  {
-                    left: exit.x,
-                    top: exit.y,
-                    width: exit.width,
-                    height: exit.height,
-                  },
-                ]}
-              />
-            ))}
-
-            <PlayerSprite
-              x={playerPos.x}
-              y={playerPos.y}
-              size={PLAYER_SIZE}
-              spriteSource={PLAYER_SPRITE}
+        {!activeNode ? (
+          <View style={styles.gameplayBottomOverlay}>
+            <InteractPrompt
+              visible={!!interactionTarget}
+              text={`Press E or tap Talk to speak with ${speakerLabel}.`}
             />
           </View>
-        </View>
+        ) : null}
 
-        <Text style={styles.hint}>Use W A S D to move</Text>
-
-        <View style={styles.choiceArea}>
-          {activeNode?.choices && (
-            <PlayerChoice
-              choices={activeNode.choices}
-              onSelect={(id, label, cost) => handleSelect(id, label, cost)}
-            />
-          )}
-        </View>
-
-        <DialogBox
-          characterId={activeNode?.character || 'system'}
-          characterData={characters}
-          txt={activeNode ? activeNode.txt : ''}
-          onPress={
-            activeNode && !activeNode.choices && !activeNode.autoAdvance && activeNode.next
-              ? () => handleSelect(activeNode.next)
-              : null
-          }
-        />
-
-        {!activeNode && (
-          <TouchableOpacity style={styles.menuButton} onPress={onGoToMenu}>
-            <Text style={styles.menuButtonText}>Return to Menu</Text>
+        {!activeNode && interactionTarget ? (
+          <TouchableOpacity style={styles.interactButton} onPress={beginNpcInteraction}>
+            <Text style={styles.interactButtonText}>Talk</Text>
           </TouchableOpacity>
-        )}
+        ) : null}
+
+        {activeNode ? (
+          <View style={styles.gameplayDialogueWrap}>
+            {activeNode?.choices ? (
+              <PlayerChoice
+                variant="overlay"
+                choices={activeNode.choices}
+                onSelect={(id, label, cost) => handleSelect(id, label, cost)}
+              />
+            ) : null}
+
+            <DialogBox
+              variant="overlay"
+              showPortrait={activeNode?.character !== 'system'}
+              characterId={activeNode?.character || 'system'}
+              characterData={dialogueCharacters}
+              txt={activeNode ? activeNode.txt : ''}
+              portraitOverride={speakerPortrait}
+              continueHint={activeNode && !activeNode.autoAdvance ? 'Tap to continue' : null}
+              onPress={
+                activeNode && !activeNode.choices && !activeNode.autoAdvance && activeNode.next
+                  ? () => handleSelect(activeNode.next)
+                  : null
+              }
+            />
+          </View>
+        ) : null}
       </Animated.View>
       </ImageBackground>
 
@@ -480,9 +950,96 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 14,
   },
+  sceneOverline: {
+    fontSize: 12,
+    letterSpacing: 2,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  sceneTitle: {
+    color: '#ffffff',
+    fontSize: 34,
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  sceneSubtitle: {
+    color: '#d8d1ea',
+    fontSize: 14,
+    lineHeight: 20,
+    maxWidth: 320,
+  },
+  vnContainer: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingTop: 18,
+    paddingBottom: 16,
+    justifyContent: 'space-between',
+  },
+  vnStage: {
+    flex: 1,
+    minHeight: 240,
+    borderRadius: 26,
+    borderWidth: 1,
+    overflow: 'hidden',
+    paddingHorizontal: 18,
+    paddingTop: 26,
+    justifyContent: 'space-between',
+  },
+  vnStageTextWrap: {
+    zIndex: 2,
+  },
+  vnBackdropGlow: {
+    position: 'absolute',
+    width: 260,
+    height: 260,
+    borderRadius: 999,
+    left: -50,
+    top: 20,
+  },
+  vnBackdropGlowSecondary: {
+    position: 'absolute',
+    width: 280,
+    height: 280,
+    borderRadius: 999,
+    right: -40,
+    bottom: -50,
+  },
+  vnSpeakerVisual: {
+    position: 'absolute',
+    right: 8,
+    bottom: 0,
+    width: 220,
+    height: 220,
+    opacity: 0.95,
+  },
+  vnSpeakerPlaceholder: {
+    position: 'absolute',
+    right: 18,
+    bottom: 18,
+    width: 180,
+    height: 180,
+    borderRadius: 30,
+    borderWidth: 1,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  vnDialoguePanel: {
+    marginTop: 14,
+    borderRadius: 26,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 8,
+  },
+  vnHintLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+  gameplayContainer: {
+    flex: 1,
+  },
   viewport: {
-    width: VIEWPORT_WIDTH,
-    height: VIEWPORT_HEIGHT,
     alignSelf: 'center',
     overflow: 'hidden',
     borderRadius: 20,
@@ -495,69 +1052,116 @@ const styles = StyleSheet.create({
   world: {
     position: 'relative',
   },
+  sceneBackground: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+  },
   grass: {
     position: 'absolute',
     left: 0,
     top: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#d7f0c8',
   },
   pathOne: {
     position: 'absolute',
     left: 120,
     top: 160,
-    width: 800,
+    width: 1200,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#d9c49a',
   },
   pathTwo: {
     position: 'absolute',
-    left: 620,
-    top: 100,
-    width: 140,
-    height: 500,
-    borderRadius: 70,
-    backgroundColor: '#d9c49a',
+    left: 900,
+    top: 120,
+    width: 160,
+    height: 560,
+    borderRadius: 80,
   },
   colliderVisual: {
     position: 'absolute',
     borderRadius: 999,
-    backgroundColor: '#4d9a58',
     zIndex: 8,
+  },
+  objectVisual: {
+    position: 'absolute',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.14)',
+  },
+  objectLabel: {
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   npcWrap: {
     position: 'absolute',
     alignItems: 'center',
     zIndex: 16,
   },
-  npcSprite: {
-    width: 70,
-    height: 70,
-  },
   npcLabel: {
     marginTop: 2,
     fontWeight: '700',
-    color: '#2a1e3b',
+    color: '#102330',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    overflow: 'hidden',
   },
   exitVisual: {
     position: 'absolute',
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: '#7a4fe0',
-    backgroundColor: 'rgba(122,79,224,0.08)',
   },
-  hint: {
-    color: '#f6f0ff',
-    textAlign: 'center',
-    marginBottom: 8,
-    fontWeight: '700',
+  gameplayHud: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+    maxWidth: 260,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 18,
+    borderWidth: 1,
   },
-  choiceArea: {
-    minHeight: 95,
-    justifyContent: 'center',
+  gameplayHudTitle: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  gameplayHudText: {
+    color: '#d7eef8',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  gameplayBottomOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 24,
     alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  interactButton: {
+    position: 'absolute',
+    right: 18,
+    bottom: 22,
+    backgroundColor: 'rgba(14, 23, 34, 0.92)',
+    borderColor: 'rgba(176, 233, 255, 0.34)',
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
   },
   menuButton: {
     backgroundColor: '#8b5cf6',
@@ -579,4 +1183,5 @@ const styles = StyleSheet.create({
     opacity: 0.95,
   },
 });
+
 export default WorldScene;
