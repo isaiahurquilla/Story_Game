@@ -10,7 +10,7 @@
   },
   "npcs": [
     {
-      "id": "fox",
+      "id": "pink",
       "x": 760,
       "y": 420,
       "interactionNode": "start"

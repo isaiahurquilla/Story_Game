@@ -1,11 +1,11 @@
 {
-  "talkFox": {
-    "character": "fox",
+  "talkPink": {
+    "character": "pink",
     "txt": "Keep up! We are not stopping yet.",
     "next": "end"
   },
   "afterRun": {
-    "character": "fox",
+    "character": "pink",
     "txt": "There. Keep your head down. We can breathe for a second.",
     "next": "end"
   }

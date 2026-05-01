@@ -70,14 +70,19 @@ const SCENE_BACKGROUND_MAP = {
 */
 
 const NPC_ANIMATION_MAP = {
-  fox: SIDEKICK_ANIMATION_SET,
-  wolf: SIDEKICK_ANIMATION_SET,
+  pink: SIDEKICK_ANIMATION_SET, // Change 'fox' to 'pink'
+  owlet: SIDEKICK_ANIMATION_SET, 
+  //fox: SIDEKICK_ANIMATION_SET,
+  //wolf: SIDEKICK_ANIMATION_SET,
 };
 
 const NPC_PORTRAIT_MAP = {
   fox: require('../assets/images/fox.png'),
   wolf: require('../assets/images/wolf.png'),
   hare: require('../assets/images/hare.png'),
+  dude_image: require('../assets/sprites/Dude_Monster/Dude_Monster.png'),
+  pink_image: require('../assets/sprites/Pink_Monster/Pink_Monster.png'),
+  owlet_image: require('../assets/sprites/Owlet_Monster/Owlet_Monster.png'),
 };
 
 const storyMap = {
@@ -112,7 +117,8 @@ const sceneConfigMap = {
   scene2: {
     layout: 'gameplay',
     startNode: null,
-    leaderNpcId: 'fox',
+    leaderNpcId: 'pink',
+    //leaderNpcId: 'fox',
     leaderGoalId: 'fallenLog',
     arrivalNode: 'afterRun',
     topLabel: 'SCENE 2',
@@ -184,14 +190,10 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
 
 const dialogueCharacters = useMemo(
   () => ({
-    ...characters,
-    fox: {
-      ...characters.fox,
-      name: 'Side_Character',
-    },
+    ...characters, // spreads the JSON ("pink", "owlet", "dude")
     player: {
-      name: profileName || 'Player',
-      portrait: 'hare_image',
+      ...characters.dude, // Links the 'player' ID to 'dude' attributes
+      name: profileName || characters.dude.name, // Overrides name if you have a custom profile
     },
     system: {
       name: ' ',

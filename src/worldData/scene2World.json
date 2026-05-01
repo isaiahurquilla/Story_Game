@@ -10,10 +10,10 @@
   },
   "npcs": [
     {
-      "id": "fox",
+      "id": "pink",
       "x": 250,
       "y": 620,
-      "interactionNode": "talkFox"
+      "interactionNode": "talkPink"
     }
   ],
   "objects": [

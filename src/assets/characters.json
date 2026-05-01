@@ -1,17 +1,17 @@
 {
-  "fox": {
-    "name": "Fox",
+  "pink": {
+    "name": "Pink",
     "voice": "voice.ogg",
-    "portrait": "fox_image"
+    "portrait": "pink_image"
   },
-  "wolf": {
-    "name": "Wolf",
+  "owlet": {
+    "name": "Owlet",
     "voice": "voice2.ogg",
-    "portrait": "wolf_image"
+    "portrait": "owlet_image"
   },
-  "hare": {
-    "name": "Hare",
+  "dude": {
+    "name": "player",
     "voice": "voice3.ogg",
-    "portrait": "hare_image"
+    "portrait": "dude_image"
   }
 }
