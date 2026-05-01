@@ -30,6 +30,7 @@ import { getMovementVector, getFacingFromVector } from '../systems/PlayerControl
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
 import { getNearbyNpc, getTouchedExit } from '../systems/InteractionSystem';
+import { SCENE_BACKGROUND_MAP } from '../constants/backgroundConfigs';
 
 const PLAYER_SIZE = 64;
 const MOVE_SPEED = 4;
@@ -61,10 +62,12 @@ const SIDEKICK_ANIMATION_SET = {
     run: 6,
   },
 };
-
+/*
+Replaced with backgroundConfigs file
 const SCENE_BACKGROUND_MAP = {
   scene2: require('../assets/backgrounds/scene2-bg.png'),
 };
+*/
 
 const NPC_ANIMATION_MAP = {
   fox: SIDEKICK_ANIMATION_SET,
@@ -87,6 +90,7 @@ const worldMap = {
   scene2: scene2World,
 };
 
+// scene config here!
 const sceneConfigMap = {
   scene1: {
     layout: 'vn',
@@ -749,11 +753,24 @@ const dialogueCharacters = useMemo(
   if (sceneConfig.layout === 'vn') {
     return (
       <View style={[styles.root, { backgroundColor: sceneConfig.palette.background }]}>
+        
+        {/* Background image */}
+        {SCENE_BACKGROUND_MAP[normalizedSceneId] && (
+          <Image
+            source={SCENE_BACKGROUND_MAP[normalizedSceneId]}
+            style={styles.vnFullscreenBackground} // Makes it cover the whole screen
+            resizeMode="cover"
+          />
+        )}
+        
         <Animated.View style={[styles.vnContainer, { transform: [{ translateX: shakeAnim }] }]}>
           <TouchableOpacity style={styles.topMenuButton} onPress={onGoToMenu}>
             <Text style={styles.topMenuButtonText}>Exit</Text>
           </TouchableOpacity>
 
+          
+          {/*
+          this was a banner with a scene description
           <View
             style={[
               styles.vnStage,
@@ -795,6 +812,7 @@ const dialogueCharacters = useMemo(
               />
             )}
           </View>
+          */}
 
           <View
             style={[
@@ -805,18 +823,13 @@ const dialogueCharacters = useMemo(
               },
             ]}
           >
+
+            {/* hint */}
             <Text style={[styles.vnHintLabel, { color: sceneConfig.palette.accent }]}>
               {sceneConfig.hint}
             </Text>
 
-            {activeNode?.choices ? (
-              <PlayerChoice
-                variant="vn"
-                choices={activeNode.choices}
-                onSelect={(id, label, cost) => handleSelect(id, label, cost)}
-              />
-            ) : null}
-
+            {/* dialog */}
             <DialogBox
               variant="vn"
               showPortrait={activeNode?.character !== 'system'}
@@ -831,6 +844,16 @@ const dialogueCharacters = useMemo(
                   : null
               }
             />
+
+            {/* choices go here */}
+            {activeNode?.choices ? (
+              <PlayerChoice
+                variant="vn"
+                choices={activeNode.choices}
+                onSelect={(id, label, cost) => handleSelect(id, label, cost)}
+              />
+            ) : null}
+
           </View>
         </Animated.View>
 
@@ -1165,6 +1188,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     opacity: 0.95,
   },
+  vnFullscreenBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+},
 });
 
 export default WorldScene;
