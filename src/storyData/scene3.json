@@ -1,0 +1,50 @@
+{
+  "start": {
+    "character": "pink",
+    "txt": "Alright, this should be far enough.",
+     "next": "d2"
+  },
+  "d2": {
+    "character": "pink",
+    "txt": "How are you feeling?",
+    "choices": [
+      { "label": "I'm fine.", "next": "fine" },
+      { "label": "What just happened?", "next": "what" }
+    ]   
+  },
+  "fine": {
+    "character": "pink",
+    "txt": "Good! I was worried the crash would be too much for us.",
+    "next": "fine2"
+  },
+  "fine2": {
+    "character": "pink",
+    "txt": "I'm glad you were able to steer away from the larger trees, haha!",
+    "next": "anyway"
+  },
+  "what": {
+    "character": "pink",
+    "txt": "...?",
+    "next": "what2"
+  },
+  "what2": {
+    "character": "pink",
+    "txt": "Oh, it was the engine.. it took too much damage..",
+    "next": "what3"
+  },
+  "what3": {
+    "character": "pink",
+    "txt": "I thought it was sturdier than that. I'm just glad you were driving!",
+    "next": "anyway"
+  },
+  "anyway": {
+    "character": "pink",
+    "txt": "Anyway, since we got away from the crash site, we should look around.",
+    "next": "anyway2"
+  },
+  "anyway2": {
+    "character": "pink",
+    "txt": "There's a clearing up ahead, let's try there first.",
+    "next": "end"
+  }
+}

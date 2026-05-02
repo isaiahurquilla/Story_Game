@@ -24,6 +24,7 @@ import {
 import characters from '../assets/characters.json';
 import scene1Story from '../storyData/scene1.json';
 import scene2Story from '../storyData/scene2.json';
+import scene3Story from '../storyData/scene3.json';
 import scene1World from '../worldData/scene1World.json';
 import scene2World from '../worldData/scene2World.json';
 import { getMovementVector, getFacingFromVector } from '../systems/PlayerController';
@@ -70,24 +71,31 @@ const SCENE_BACKGROUND_MAP = {
 */
 
 const NPC_ANIMATION_MAP = {
-  fox: SIDEKICK_ANIMATION_SET,
-  wolf: SIDEKICK_ANIMATION_SET,
+  pink: SIDEKICK_ANIMATION_SET, // Change 'fox' to 'pink'
+  owlet: SIDEKICK_ANIMATION_SET, 
+  //fox: SIDEKICK_ANIMATION_SET,
+  //wolf: SIDEKICK_ANIMATION_SET,
 };
 
 const NPC_PORTRAIT_MAP = {
   fox: require('../assets/images/fox.png'),
   wolf: require('../assets/images/wolf.png'),
   hare: require('../assets/images/hare.png'),
+  dude_image: require('../assets/sprites/Dude_Monster/Dude_Monster.png'),
+  pink_image: require('../assets/sprites/Pink_Monster/Pink_Monster.png'),
+  owlet_image: require('../assets/sprites/Owlet_Monster/Owlet_Monster.png'),
 };
 
 const storyMap = {
   scene1: scene1Story,
   scene2: scene2Story,
+  scene3: scene3Story,
 };
 
 const worldMap = {
   scene1: scene1World,
   scene2: scene2World,
+  scene3: scene1World,
 };
 
 // scene config here!
@@ -112,7 +120,8 @@ const sceneConfigMap = {
   scene2: {
     layout: 'gameplay',
     startNode: null,
-    leaderNpcId: 'fox',
+    leaderNpcId: 'pink',
+    //leaderNpcId: 'fox',
     leaderGoalId: 'fallenLog',
     arrivalNode: 'afterRun',
     topLabel: 'SCENE 2',
@@ -127,6 +136,23 @@ const sceneConfigMap = {
       cardBorder: 'rgba(176, 233, 255, 0.34)',
       overlayOne: 'rgba(72, 161, 120, 0.18)',
       overlayTwo: 'rgba(58, 94, 176, 0.16)',
+    },
+  },
+  scene3: {
+    layout: 'vn',
+    startNode: 'start', 
+    topLabel: 'SCENE 3',
+    title: 'blank title',
+    subtitle: 'blank subtitle',
+    hint: 'Tap the dialogue box to advance.',
+    palette: {
+      background: '#120c1e',
+      panel: '#1d1230',
+      accent: '#d3b7ff',
+      accentSoft: 'rgba(152, 105, 255, 0.18)',
+      cardBorder: 'rgba(216, 196, 255, 0.42)',
+      overlayOne: 'rgba(255, 122, 89, 0.18)',
+      overlayTwo: 'rgba(119, 77, 255, 0.22)',
     },
   },
 };
@@ -184,14 +210,10 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
 
 const dialogueCharacters = useMemo(
   () => ({
-    ...characters,
-    fox: {
-      ...characters.fox,
-      name: 'Side_Character',
-    },
+    ...characters, // spreads the JSON ("pink", "owlet", "dude")
     player: {
-      name: profileName || 'Player',
-      portrait: 'hare_image',
+      ...characters.dude, // Links the 'player' ID to 'dude' attributes
+      name: profileName || characters.dude.name, // Overrides name if you have a custom profile
     },
     system: {
       name: ' ',

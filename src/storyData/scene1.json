@@ -8,7 +8,7 @@
     "next": "start"
   },
   "start": {
-    "character": "fox",
+    "character": "pink",
     "txt": "Did it work???",
     "choices": [
       { "label": "Play along", "next": "playAlong" },
@@ -39,7 +39,7 @@
     "next": "followMe"
   },
   "followMe": {
-    "character": "fox",
+    "character": "pink",
     "txt": "No Time! Follow me!",
     "next": "scene2"
   }
