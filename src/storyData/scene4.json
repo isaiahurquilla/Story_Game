@@ -1,0 +1,51 @@
+{
+  "start": {
+    "character": "pink",
+    "txt": "This clearing looks good. Let's take a moment to rest and figure out our next move.",
+    "next": "lookAround"
+  },
+  "lookAround": {
+    "character": "pink",
+    "txt": "I see some interesting things around here. What should we check out first?",
+    "choices": [
+      { "label": "Look at the strange rock formation", "next": "rockFormation" },
+      { "label": "Check the old ruins nearby", "next": "oldRuins" },
+      { "label": "Search for any useful supplies", "next": "supplies" }
+    ]
+  },
+  "rockFormation": {
+    "character": "pink",
+    "txt": "This rock formation is unusual... it almost looks like it was carved intentionally.",
+    "next": "rockFormation2"
+  },
+  "rockFormation2": {
+    "character": "pink",
+    "txt": "There might be some ancient markings here. This could be important!",
+    "next": "afterInvestigation"
+  },
+  "oldRuins": {
+    "character": "pink",
+    "txt": "These ruins look ancient. I wonder what civilization built them...",
+    "next": "oldRuins2"
+  },
+  "oldRuins2": {
+    "character": "pink",
+    "txt": "There are some inscriptions I can't quite read. We should remember this location.",
+    "next": "afterInvestigation"
+  },
+  "supplies": {
+    "character": "pink",
+    "txt": "I found some useful supplies! A first aid kit and some tools.",
+    "next": "supplies2"
+  },
+  "supplies2": {
+    "character": "pink",
+    "txt": "This will definitely help us on our journey. Good thinking!",
+    "next": "afterInvestigation"
+  },
+  "afterInvestigation": {
+    "character": "pink",
+    "txt": "We should keep moving. There might be more dangers ahead, but we're better prepared now.",
+    "next": "end"
+  }
+}

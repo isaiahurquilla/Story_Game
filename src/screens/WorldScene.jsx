@@ -25,8 +25,10 @@ import characters from '../assets/characters.json';
 import scene1Story from '../storyData/scene1.json';
 import scene2Story from '../storyData/scene2.json';
 import scene3Story from '../storyData/scene3.json';
+import scene4Story from '../storyData/scene4.json';
 import scene1World from '../worldData/scene1World.json';
 import scene2World from '../worldData/scene2World.json';
+import scene4World from '../worldData/scene4World.json';
 import { getMovementVector, getFacingFromVector } from '../systems/PlayerController';
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
@@ -90,12 +92,14 @@ const storyMap = {
   scene1: scene1Story,
   scene2: scene2Story,
   scene3: scene3Story,
+  scene4: scene4Story,
 };
 
 const worldMap = {
   scene1: scene1World,
   scene2: scene2World,
   scene3: scene1World,
+  scene4: scene4World,
 };
 
 // scene config here!
@@ -153,6 +157,23 @@ const sceneConfigMap = {
       cardBorder: 'rgba(216, 196, 255, 0.42)',
       overlayOne: 'rgba(255, 122, 89, 0.18)',
       overlayTwo: 'rgba(119, 77, 255, 0.22)',
+    },
+  },
+  scene4: {
+    layout: 'gameplay',
+    startNode: null,
+    topLabel: 'SCENE 4',
+    title: 'The Clearing',
+    subtitle: 'Explore the mysterious clearing and uncover its secrets.',
+    hint: 'Use W A S D to move. Press E or tap to interact with objects.',
+    palette: {
+      background: '#0a1a0f',
+      panel: 'rgba(15, 25, 20, 0.76)',
+      accent: '#90ff90',
+      accentSoft: 'rgba(144, 255, 144, 0.18)',
+      cardBorder: 'rgba(176, 255, 176, 0.34)',
+      overlayOne: 'rgba(72, 161, 120, 0.18)',
+      overlayTwo: 'rgba(58, 176, 94, 0.16)',
     },
   },
 };

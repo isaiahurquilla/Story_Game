@@ -203,8 +203,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   vnPortrait: {
-    width: 116,
-    height: 116,
+    width: 300,
+    height: 300,
     borderColor: 'rgba(255,255,255,0.22)',
     backgroundColor: 'rgba(32,20,52,0.95)',
   },
