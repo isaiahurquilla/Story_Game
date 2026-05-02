@@ -24,6 +24,7 @@ import {
 import characters from '../assets/characters.json';
 import scene1Story from '../storyData/scene1.json';
 import scene2Story from '../storyData/scene2.json';
+import scene3Story from '../storyData/scene3.json';
 import scene1World from '../worldData/scene1World.json';
 import scene2World from '../worldData/scene2World.json';
 import { getMovementVector, getFacingFromVector } from '../systems/PlayerController';
@@ -88,11 +89,13 @@ const NPC_PORTRAIT_MAP = {
 const storyMap = {
   scene1: scene1Story,
   scene2: scene2Story,
+  scene3: scene3Story,
 };
 
 const worldMap = {
   scene1: scene1World,
   scene2: scene2World,
+  scene3: scene1World,
 };
 
 // scene config here!
@@ -133,6 +136,23 @@ const sceneConfigMap = {
       cardBorder: 'rgba(176, 233, 255, 0.34)',
       overlayOne: 'rgba(72, 161, 120, 0.18)',
       overlayTwo: 'rgba(58, 94, 176, 0.16)',
+    },
+  },
+  scene3: {
+    layout: 'vn',
+    startNode: 'start', 
+    topLabel: 'SCENE 3',
+    title: 'blank title',
+    subtitle: 'blank subtitle',
+    hint: 'Tap the dialogue box to advance.',
+    palette: {
+      background: '#120c1e',
+      panel: '#1d1230',
+      accent: '#d3b7ff',
+      accentSoft: 'rgba(152, 105, 255, 0.18)',
+      cardBorder: 'rgba(216, 196, 255, 0.42)',
+      overlayOne: 'rgba(255, 122, 89, 0.18)',
+      overlayTwo: 'rgba(119, 77, 255, 0.22)',
     },
   },
 };
