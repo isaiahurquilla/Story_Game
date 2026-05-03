@@ -65,6 +65,19 @@ const SIDEKICK_ANIMATION_SET = {
     run: 6,
   },
 };
+
+const OWLET_ANIMATION_SET = {
+  idle: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Idle_4.png'),
+  walk: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Walk_6.png'),
+  run: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Run_6.png'),
+  frameWidth: 32,
+  frameHeight: 32,
+  frameCounts: {
+    idle: 4,
+    walk: 6,
+    run: 6,
+  },
+};
 /*
 Replaced with backgroundConfigs file
 const SCENE_BACKGROUND_MAP = {
@@ -73,8 +86,8 @@ const SCENE_BACKGROUND_MAP = {
 */
 
 const NPC_ANIMATION_MAP = {
-  pink: SIDEKICK_ANIMATION_SET, // Change 'fox' to 'pink'
-  owlet: SIDEKICK_ANIMATION_SET, 
+  pink: SIDEKICK_ANIMATION_SET,
+  owlet: OWLET_ANIMATION_SET,
   //fox: SIDEKICK_ANIMATION_SET,
   //wolf: SIDEKICK_ANIMATION_SET,
 };

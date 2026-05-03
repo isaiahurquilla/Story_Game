@@ -14,6 +14,12 @@
       "x": 300,
       "y": 650,
       "interactionNode": "start"
+    },
+    {
+      "id": "owlet",
+      "x": 400,
+      "y": 750,
+      "interactionNode": "startOwlet"
     }
   ],
   "objects": [
