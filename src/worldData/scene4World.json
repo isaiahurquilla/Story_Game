@@ -46,11 +46,20 @@
   ],
   "colliders": [
     {
-      "id": "tree1",
-      "x": 500,
+      "id": "house1",
+      "x": 975,
       "y": 400,
-      "width": 80,
-      "height": 120
+      "width": 150,
+      "height": 300,
+      "image": "Building 05.png"
+    },
+    {
+    "id": "house2",
+      "x": 1400,
+      "y": 400,
+      "width": 150,
+      "height": 300,
+      "image": "Building 06.png"
     },
     {
       "id": "tree2",

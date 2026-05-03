@@ -1,7 +1,7 @@
 {
   "start": {
     "character": "pink",
-    "txt": "This clearing looks good. Let's take a moment to rest and figure out our next move.",
+    "txt": "Oh! There's ",
     "next": "lookAround"
   },
   "lookAround": {

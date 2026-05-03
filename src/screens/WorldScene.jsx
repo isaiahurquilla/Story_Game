@@ -92,6 +92,8 @@ const OBJECT_IMAGE_MAP = {
   'fox.png': require('../assets/images/fox.png'),
   'hare.png': require('../assets/images/hare.png'),
   'wolf.png': require('../assets/images/wolf.png'),
+  'Building 05.png': require('../assets/images/Building 05.png'),
+  'Building 06.png': require('../assets/images/Building 06.png'),
 };
 
 const storyMap = {
@@ -709,10 +711,21 @@ const dialogueCharacters = useMemo(
                   top: collider.y,
                   width: collider.width,
                   height: collider.height,
-                  backgroundColor: worldThemeStyle.collider,
+                  backgroundColor: collider.image ? 'transparent' : worldThemeStyle.collider,
+                  justifyContent: collider.image ? 'flex-end' : 'center',
+                  alignItems: collider.image ? 'center' : 'stretch',
+                  overflow: collider.image ? 'hidden' : 'visible',
                 },
               ]}
-            />
+            >
+              {collider.image ? (
+                <Image
+                  source={OBJECT_IMAGE_MAP[collider.image]}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="contain"
+                />
+              ) : null}
+            </View>
           ))}
 
         {(worldData.objects || []).map((item) => (
@@ -1161,7 +1174,7 @@ const styles = StyleSheet.create({
   },
   colliderVisual: {
     position: 'absolute',
-    borderRadius: 999,
+    //borderRadius: 999,
     zIndex: 8,
   },
   objectVisual: {
