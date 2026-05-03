@@ -1,7 +1,7 @@
 {
   "world": {
     "width": 2000,
-    "height": 900,
+    "height": 1000,
     "theme": "clearing"
   },
   "spawn": {
@@ -18,30 +18,14 @@
   ],
   "objects": [
     {
-      "id": "rockFormation",
-      "label": "Strange Rocks",
-      "x": 800,
-      "y": 500,
-      "width": 120,
-      "height": 80,
-      "image": "fox.png"
-    },
-    {
       "id": "oldRuins",
       "label": "Ancient Ruins",
       "x": 1200,
       "y": 450,
       "width": 150,
       "height": 100,
-      "interactionNode": "oldRuins"
-    },
-    {
-      "id": "supplyCache",
-      "label": "Supply Cache",
-      "x": 1600,
-      "y": 600,
-      "width": 80,
-      "height": 60
+      "interactionNode": "oldRuins",
+      "visible": false
     }
   ],
   "colliders": [
@@ -62,11 +46,12 @@
       "image": "Building 06.png"
     },
     {
-      "id": "tree2",
-      "x": 700,
-      "y": 350,
-      "width": 90,
-      "height": 130
+    "id": "house3",
+      "x": 1600,
+      "y": 600,
+      "width": 200,
+      "height": 300,
+      "image": "Building 07.png"
     },
     {
       "id": "ruinsWall",

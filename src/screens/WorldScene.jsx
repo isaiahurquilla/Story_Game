@@ -94,6 +94,7 @@ const OBJECT_IMAGE_MAP = {
   'wolf.png': require('../assets/images/wolf.png'),
   'Building 05.png': require('../assets/images/Building 05.png'),
   'Building 06.png': require('../assets/images/Building 06.png'),
+  'Building 07.png': require('../assets/images/Building 07.png'),
 };
 
 const storyMap = {
@@ -728,7 +729,7 @@ const dialogueCharacters = useMemo(
             </View>
           ))}
 
-        {(worldData.objects || []).map((item) => (
+{(worldData.objects || []).filter((item) => item.visible !== false).map((item) => (
           <View
             key={item.id}
             style={[
