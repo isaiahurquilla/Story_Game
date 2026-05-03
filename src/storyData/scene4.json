@@ -43,6 +43,12 @@
     "txt": "This will definitely help us on our journey. Good thinking!",
     "next": "afterInvestigation"
   },
+  "owletStart": {
+    "character": "owlet",
+    "txt": "Hey lol,",
+    "next": "afterInvestigation"
+  },
+
   "afterInvestigation": {
     "character": "pink",
     "txt": "We should keep moving. There might be more dangers ahead, but we're better prepared now.",

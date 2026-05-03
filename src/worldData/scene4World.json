@@ -19,7 +19,7 @@
       "id": "owlet",
       "x": 400,
       "y": 750,
-      "interactionNode": "startOwlet"
+      "interactionNode": "owletStart"
     }
   ],
   "objects": [
