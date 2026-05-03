@@ -32,7 +32,7 @@ import scene4World from '../worldData/scene4World.json';
 import { getMovementVector, getFacingFromVector } from '../systems/PlayerController';
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
-import { getNearbyNpc, getTouchedExit } from '../systems/InteractionSystem';
+import { getNearbyNpc, getNearbyObject, getTouchedExit } from '../systems/InteractionSystem';
 import { SCENE_BACKGROUND_MAP } from '../constants/backgroundConfigs';
 
 const PLAYER_SIZE = 64;
@@ -86,6 +86,12 @@ const NPC_PORTRAIT_MAP = {
   dude_image: require('../assets/sprites/Dude_Monster/Dude_Monster.png'),
   pink_image: require('../assets/sprites/Pink_Monster/Pink_Monster.png'),
   owlet_image: require('../assets/sprites/Owlet_Monster/Owlet_Monster.png'),
+};
+
+const OBJECT_IMAGE_MAP = {
+  'fox.png': require('../assets/images/fox.png'),
+  'hare.png': require('../assets/images/hare.png'),
+  'wolf.png': require('../assets/images/wolf.png'),
 };
 
 const storyMap = {
@@ -462,7 +468,13 @@ const dialogueCharacters = useMemo(
       npcs: npcPositions,
     });
 
-    setInteractionTarget(nearbyNpc || null);
+    const nearbyObject = getNearbyObject({
+      playerPos,
+      playerSize: PLAYER_SIZE,
+      objects: worldData?.objects || [],
+    });
+
+    setInteractionTarget(nearbyObject || nearbyNpc || null);
 
     const touchedExit = getTouchedExit({
       playerPos,
@@ -685,21 +697,23 @@ const dialogueCharacters = useMemo(
           </>
         )}
 
-        {(worldData.colliders || []).map((collider) => (
-          <View
-            key={collider.id}
-            style={[
-              styles.colliderVisual,
-              {
-                left: collider.x,
-                top: collider.y,
-                width: collider.width,
-                height: collider.height,
-                backgroundColor: worldThemeStyle.collider,
-              },
-            ]}
-          />
-        ))}
+        {(worldData.colliders || [])
+          .filter((collider) => collider.visible !== false)
+          .map((collider) => (
+            <View
+              key={collider.id}
+              style={[
+                styles.colliderVisual,
+                {
+                  left: collider.x,
+                  top: collider.y,
+                  width: collider.width,
+                  height: collider.height,
+                  backgroundColor: worldThemeStyle.collider,
+                },
+              ]}
+            />
+          ))}
 
         {(worldData.objects || []).map((item) => (
           <View
@@ -711,13 +725,21 @@ const dialogueCharacters = useMemo(
                 top: item.y,
                 width: item.width,
                 height: item.height,
-                backgroundColor: worldThemeStyle.object,
+                backgroundColor: item.image ? 'transparent' : worldThemeStyle.object,
               },
             ]}
           >
-            <Text style={[styles.objectLabel, { color: worldThemeStyle.objectAccent }]}>
-              {item.label || item.id}
-            </Text>
+            {item.image ? (
+              <Image
+                source={OBJECT_IMAGE_MAP[item.image]}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text style={[styles.objectLabel, { color: worldThemeStyle.objectAccent }]}>
+                {item.label || item.id}
+              </Text>
+            )}
           </View>
         ))}
 
@@ -790,8 +812,10 @@ const dialogueCharacters = useMemo(
   }
 
   const speakerLabel = interactionTarget
-    ? dialogueCharacters[interactionTarget.id]?.name || interactionTarget.id
+    ? interactionTarget.label || dialogueCharacters[interactionTarget.id]?.name || interactionTarget.id
     : 'someone';
+
+  const interactButtonLabel = interactionTarget?.type === 'object' ? 'Inspect' : 'Talk';
 
   if (sceneConfig.layout === 'vn') {
     return (
@@ -934,14 +958,16 @@ const dialogueCharacters = useMemo(
           <View style={styles.gameplayBottomOverlay}>
             <InteractPrompt
               visible={!!interactionTarget}
-              text={`Press E or tap Talk to speak with ${speakerLabel}.`}
+              text={`Press E or tap ${interactButtonLabel} to ${
+                interactionTarget?.type === 'object' ? 'examine' : 'speak with'
+              } ${speakerLabel}.`}
             />
           </View>
         ) : null}
 
         {!activeNode && interactionTarget ? (
           <TouchableOpacity style={styles.interactButton} onPress={beginNpcInteraction}>
-            <Text style={styles.interactButtonText}>Talk</Text>
+            <Text style={styles.interactButtonText}>{interactButtonLabel}</Text>
           </TouchableOpacity>
         ) : null}
 
