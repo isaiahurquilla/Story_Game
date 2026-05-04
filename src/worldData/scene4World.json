@@ -32,6 +32,36 @@
       "height": 100,
       "interactionNode": "oldRuins",
       "visible": false
+    },
+    {
+      "id": "leftHouse",
+      "label": "Left House",
+      "x": 975,
+      "y": 700,
+      "width": 150,
+      "height": 50,
+      "interactionNode": "leftHouse",
+      "visible": false
+    },
+    {
+      "id": "rightHouse",
+      "label": "Right House",
+      "x": 1400,
+      "y": 700,
+      "width": 150,
+      "height": 50,
+      "interactionNode": "rightHouse",
+      "visible": false
+    },
+    {
+      "id": "oldRuins",
+      "label": "Ancient Ruins",
+      "x": 1200,
+      "y": 450,
+      "width": 150,
+      "height": 100,
+      "interactionNode": "oldRuins",
+      "visible": false
     }
   ],
   "colliders": [

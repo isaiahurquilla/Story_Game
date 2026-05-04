@@ -38,6 +38,26 @@
     "txt": "Maybe I'll find out more later.",
     "next": "afterInvestigation"
   },
+  "leftHouse": {
+    "character": "dude",
+    "txt": "The door is locked, but the lights are on.",
+    "next": "leftHouse2"
+  },
+  "leftHouse2": {
+    "character": "dude",
+    "txt": "It doesn't look like anyone's inside.",
+    "next": "afterInvestigation"
+  },
+  "rightHouse": {
+    "character": "dude",
+    "txt": "This house has a bowl of cat food at the door.",
+    "next": "rightHouse2"
+  },
+  "rightHouse2": {
+    "character": "dude",
+    "txt": "It looks stale and moldy.",
+    "next": "afterInvestigation"
+  },
   "owletStart": {
     "character": "owlet",
     "txt": "Who are you? Have you seen any one else in the area?",
