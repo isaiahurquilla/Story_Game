@@ -25,12 +25,14 @@ import characters from '../assets/characters.json';
 import scene1Story from '../storyData/scene1.json';
 import scene2Story from '../storyData/scene2.json';
 import scene3Story from '../storyData/scene3.json';
+import scene4Story from '../storyData/scene4.json';
 import scene1World from '../worldData/scene1World.json';
 import scene2World from '../worldData/scene2World.json';
+import scene4World from '../worldData/scene4World.json';
 import { getMovementVector, getFacingFromVector } from '../systems/PlayerController';
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
-import { getNearbyNpc, getTouchedExit } from '../systems/InteractionSystem';
+import { getNearbyNpc, getNearbyObject, getTouchedExit } from '../systems/InteractionSystem';
 import { SCENE_BACKGROUND_MAP } from '../constants/backgroundConfigs';
 
 const PLAYER_SIZE = 64;
@@ -63,6 +65,19 @@ const SIDEKICK_ANIMATION_SET = {
     run: 6,
   },
 };
+
+const OWLET_ANIMATION_SET = {
+  idle: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Idle_4.png'),
+  walk: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Walk_6.png'),
+  run: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Run_6.png'),
+  frameWidth: 32,
+  frameHeight: 32,
+  frameCounts: {
+    idle: 4,
+    walk: 6,
+    run: 6,
+  },
+};
 /*
 Replaced with backgroundConfigs file
 const SCENE_BACKGROUND_MAP = {
@@ -71,8 +86,8 @@ const SCENE_BACKGROUND_MAP = {
 */
 
 const NPC_ANIMATION_MAP = {
-  pink: SIDEKICK_ANIMATION_SET, // Change 'fox' to 'pink'
-  owlet: SIDEKICK_ANIMATION_SET, 
+  pink: SIDEKICK_ANIMATION_SET,
+  owlet: OWLET_ANIMATION_SET,
   //fox: SIDEKICK_ANIMATION_SET,
   //wolf: SIDEKICK_ANIMATION_SET,
 };
@@ -86,16 +101,27 @@ const NPC_PORTRAIT_MAP = {
   owlet_image: require('../assets/sprites/Owlet_Monster/Owlet_Monster.png'),
 };
 
+const OBJECT_IMAGE_MAP = {
+  'fox.png': require('../assets/images/fox.png'),
+  'hare.png': require('../assets/images/hare.png'),
+  'wolf.png': require('../assets/images/wolf.png'),
+  'Building 05.png': require('../assets/images/Building 05.png'),
+  'Building 06.png': require('../assets/images/Building 06.png'),
+  'Building 07.png': require('../assets/images/Building 07.png'),
+};
+
 const storyMap = {
   scene1: scene1Story,
   scene2: scene2Story,
   scene3: scene3Story,
+  scene4: scene4Story,
 };
 
 const worldMap = {
   scene1: scene1World,
   scene2: scene2World,
   scene3: scene1World,
+  scene4: scene4World,
 };
 
 // scene config here!
@@ -153,6 +179,23 @@ const sceneConfigMap = {
       cardBorder: 'rgba(216, 196, 255, 0.42)',
       overlayOne: 'rgba(255, 122, 89, 0.18)',
       overlayTwo: 'rgba(119, 77, 255, 0.22)',
+    },
+  },
+  scene4: {
+    layout: 'gameplay',
+    startNode: null,
+    topLabel: 'SCENE 4',
+    title: 'The Clearing',
+    subtitle: 'Explore the mysterious clearing and uncover its secrets.',
+    hint: 'Use W A S D to move. Press E or tap to interact with objects.',
+    palette: {
+      background: '#0a1a0f',
+      panel: 'rgba(15, 25, 20, 0.76)',
+      accent: '#90ff90',
+      accentSoft: 'rgba(144, 255, 144, 0.18)',
+      cardBorder: 'rgba(176, 255, 176, 0.34)',
+      overlayOne: 'rgba(72, 161, 120, 0.18)',
+      overlayTwo: 'rgba(58, 176, 94, 0.16)',
     },
   },
 };
@@ -441,7 +484,13 @@ const dialogueCharacters = useMemo(
       npcs: npcPositions,
     });
 
-    setInteractionTarget(nearbyNpc || null);
+    const nearbyObject = getNearbyObject({
+      playerPos,
+      playerSize: PLAYER_SIZE,
+      objects: worldData?.objects || [],
+    });
+
+    setInteractionTarget(nearbyObject || nearbyNpc || null);
 
     const touchedExit = getTouchedExit({
       playerPos,
@@ -664,23 +713,36 @@ const dialogueCharacters = useMemo(
           </>
         )}
 
-        {(worldData.colliders || []).map((collider) => (
-          <View
-            key={collider.id}
-            style={[
-              styles.colliderVisual,
-              {
-                left: collider.x,
-                top: collider.y,
-                width: collider.width,
-                height: collider.height,
-                backgroundColor: worldThemeStyle.collider,
-              },
-            ]}
-          />
-        ))}
+        {(worldData.colliders || [])
+          .filter((collider) => collider.visible !== false)
+          .map((collider) => (
+            <View
+              key={collider.id}
+              style={[
+                styles.colliderVisual,
+                {
+                  left: collider.x,
+                  top: collider.y,
+                  width: collider.width,
+                  height: collider.height,
+                  backgroundColor: collider.image ? 'transparent' : worldThemeStyle.collider,
+                  justifyContent: collider.image ? 'flex-end' : 'center',
+                  alignItems: collider.image ? 'center' : 'stretch',
+                  overflow: collider.image ? 'hidden' : 'visible',
+                },
+              ]}
+            >
+              {collider.image ? (
+                <Image
+                  source={OBJECT_IMAGE_MAP[collider.image]}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="contain"
+                />
+              ) : null}
+            </View>
+          ))}
 
-        {(worldData.objects || []).map((item) => (
+{(worldData.objects || []).filter((item) => item.visible !== false).map((item) => (
           <View
             key={item.id}
             style={[
@@ -690,13 +752,21 @@ const dialogueCharacters = useMemo(
                 top: item.y,
                 width: item.width,
                 height: item.height,
-                backgroundColor: worldThemeStyle.object,
+                backgroundColor: item.image ? 'transparent' : worldThemeStyle.object,
               },
             ]}
           >
-            <Text style={[styles.objectLabel, { color: worldThemeStyle.objectAccent }]}>
-              {item.label || item.id}
-            </Text>
+            {item.image ? (
+              <Image
+                source={OBJECT_IMAGE_MAP[item.image]}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text style={[styles.objectLabel, { color: worldThemeStyle.objectAccent }]}>
+                {item.label || item.id}
+              </Text>
+            )}
           </View>
         ))}
 
@@ -769,8 +839,10 @@ const dialogueCharacters = useMemo(
   }
 
   const speakerLabel = interactionTarget
-    ? dialogueCharacters[interactionTarget.id]?.name || interactionTarget.id
+    ? interactionTarget.label || dialogueCharacters[interactionTarget.id]?.name || interactionTarget.id
     : 'someone';
+
+  const interactButtonLabel = interactionTarget?.type === 'object' ? 'Inspect' : 'Talk';
 
   if (sceneConfig.layout === 'vn') {
     return (
@@ -913,14 +985,16 @@ const dialogueCharacters = useMemo(
           <View style={styles.gameplayBottomOverlay}>
             <InteractPrompt
               visible={!!interactionTarget}
-              text={`Press E or tap Talk to speak with ${speakerLabel}.`}
+              text={`Press E or tap ${interactButtonLabel} to ${
+                interactionTarget?.type === 'object' ? 'examine' : 'speak with'
+              } ${speakerLabel}.`}
             />
           </View>
         ) : null}
 
         {!activeNode && interactionTarget ? (
           <TouchableOpacity style={styles.interactButton} onPress={beginNpcInteraction}>
-            <Text style={styles.interactButtonText}>Talk</Text>
+            <Text style={styles.interactButtonText}>{interactButtonLabel}</Text>
           </TouchableOpacity>
         ) : null}
 
@@ -1114,7 +1188,7 @@ const styles = StyleSheet.create({
   },
   colliderVisual: {
     position: 'absolute',
-    borderRadius: 999,
+    //borderRadius: 999,
     zIndex: 8,
   },
   objectVisual: {

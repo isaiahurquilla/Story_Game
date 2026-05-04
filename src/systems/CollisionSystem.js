@@ -21,9 +21,9 @@ export const applyCollision = ({
 
   const playerRect = {
     x: bounded.x,
-    y: bounded.y,
+    y: bounded.y + playerSize * 0.75,
     width: playerSize,
-    height: playerSize,
+    height: playerSize * 0.25,
   };
 
   const hitsCollider = colliders.some((collider) =>

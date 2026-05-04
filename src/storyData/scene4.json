@@ -1,0 +1,119 @@
+{
+  "start": {
+    "character": "pink",
+    "txt": "Oh! There's a town here!",
+    "next": "lookAround"
+  },
+  "lookAround": {
+    "character": "pink",
+    "txt": "Maybe the residents can help us out.",
+    "choices": [
+      { "label": "Sounds good.", "next": "" },
+      { "label": "I'm not sure...", "next": "well" },
+      { "label": "We don't need the help.", "next": "rusure" }
+    ]
+  },
+  "well": {
+    "character": "pink",
+    "txt": "Well... it doesn't hurt to check!",
+    "next": "afterInvestigation"
+},
+  "rusure": {
+    "character": "pink",
+    "txt": "Are you sure? We'll need to find parts for the engine somewhere.",
+    "next": "rusure2"
+  },
+  "rusure2": {
+    "character": "pink",
+    "txt": "If they don't have the parts, they can probably point us in the right direction.",
+    "next": "afterInvestigation"
+},
+  "oldRuins": {
+    "character": "dude",
+    "txt": "These ruins look older than the town. I wonder what civilization built them.",
+    "next": "oldRuins2"
+  },
+  "oldRuins2": {
+    "character": "dude",
+    "txt": "Maybe I'll find out more later.",
+    "next": "afterInvestigation"
+  },
+  "leftHouse": {
+    "character": "dude",
+    "txt": "The door is locked, but the lights are on.",
+    "next": "leftHouse2"
+  },
+  "leftHouse2": {
+    "character": "dude",
+    "txt": "It doesn't look like anyone's inside.",
+    "next": "afterInvestigation"
+  },
+  "rightHouse": {
+    "character": "dude",
+    "txt": "This house has a bowl of cat food at the door.",
+    "next": "rightHouse2"
+  },
+  "rightHouse2": {
+    "character": "dude",
+    "txt": "It looks stale and moldy.",
+    "next": "afterInvestigation"
+  },
+  "owletStart": {
+    "character": "owlet",
+    "txt": "Who are you? Have you seen any one else in the area?",
+    "choices": [
+      { "label": "We just arrived, we're stranded here.", "next": "owlet1" },
+      { "label": "We haven't seen anyone but you.", "next": "owlet2" },
+      { "label": "No, we actually need help finding engine parts.", "next": "help" }
+    ]
+  },
+  "owlet1": {
+    "character": "owlet",
+    "txt": "Okay, but you didn't see anyone? Anyone at all?",
+    "next": "owlet2"
+  },
+  "owlet2": {
+    "character": "owlet",
+    "txt": "Oh this is bad. I can't believe this! Everyone's been missing for days!",
+    "choices": [
+      { "label": "Hold up, what happened?", "next": "what" },
+      { "label": "Um, you wouldn't happen to know where we can get engine parts would you?", "next": "help" },
+      { "label": "Thats unfortunate. Bye.", "next": "end" }
+    ]
+  },
+  "what": {
+    "character": "owlet",
+    "txt": "I don't know! One day everyone was here, and the next day they were all gone!",
+    "next": "what2"
+  },
+  "what2": {
+    "character": "owlet",
+    "txt": "But why are you here then? You're not anyone I know.",
+    "next": "what3"
+  },
+  "what3": {
+    "character": "pink",
+    "txt": "We crashed here, we're stuck until we can find parts to fix our engine.",
+    "next": "help2"
+  },
+  "help": {
+    "character": "owlet",
+    "txt": "YOU need help? I don't think I'll be much help by myself.",
+    "next": "help2"
+  },
+  "help2": {
+    "character": "owlet",
+    "txt": "Theres a mechanic in town, but they're missing like everyone else.",
+    "next": "help3"
+  },
+  "help3": {
+    "character": "owlet",
+    "txt": "If you can help me find them, they can help you with the parts you need.",
+    "next": "end"
+  },
+  "afterInvestigation": {
+    "character": "pink",
+    "txt": "We should keep moving.",
+    "next": "end"
+  }
+}

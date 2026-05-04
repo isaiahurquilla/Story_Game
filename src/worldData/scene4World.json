@@ -1,0 +1,111 @@
+{
+  "world": {
+    "width": 2000,
+    "height": 1000,
+    "theme": "clearing"
+  },
+  "spawn": {
+    "x": 150,
+    "y": 650
+  },
+  "npcs": [
+    {
+      "id": "pink",
+      "x": 300,
+      "y": 650,
+      "interactionNode": "start"
+    },
+    {
+      "id": "owlet",
+      "x": 1800,
+      "y": 800,
+      "interactionNode": "owletStart"
+    }
+  ],
+  "objects": [
+    {
+      "id": "oldRuins",
+      "label": "Ancient Ruins",
+      "x": 1200,
+      "y": 450,
+      "width": 150,
+      "height": 100,
+      "interactionNode": "oldRuins",
+      "visible": false
+    },
+    {
+      "id": "leftHouse",
+      "label": "Left House",
+      "x": 975,
+      "y": 700,
+      "width": 150,
+      "height": 50,
+      "interactionNode": "leftHouse",
+      "visible": false
+    },
+    {
+      "id": "rightHouse",
+      "label": "Right House",
+      "x": 1400,
+      "y": 700,
+      "width": 150,
+      "height": 50,
+      "interactionNode": "rightHouse",
+      "visible": false
+    },
+    {
+      "id": "oldRuins",
+      "label": "Ancient Ruins",
+      "x": 1200,
+      "y": 450,
+      "width": 150,
+      "height": 100,
+      "interactionNode": "oldRuins",
+      "visible": false
+    }
+  ],
+  "colliders": [
+    {
+      "id": "house1",
+      "x": 975,
+      "y": 400,
+      "width": 150,
+      "height": 300,
+      "image": "Building 05.png"
+    },
+    {
+    "id": "house2",
+      "x": 1400,
+      "y": 400,
+      "width": 150,
+      "height": 300,
+      "image": "Building 06.png"
+    },
+    {
+    "id": "house3",
+      "x": 1600,
+      "y": 600,
+      "width": 200,
+      "height": 300,
+      "image": "Building 07.png"
+    },
+    {
+      "id": "ruinsWall",
+      "x": 0,
+      "y": 350,
+      "width": 3000,
+      "height": 50,
+      "visible": false
+    }
+  ],
+  "exits": [
+    {
+      "id": "backToScene3",
+      "x": 0,
+      "y": 600,
+      "width": 50,
+      "height": 100,
+      "targetScene": "scene3"
+    }
+  ]
+}

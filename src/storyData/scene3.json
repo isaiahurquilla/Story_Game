@@ -45,6 +45,6 @@
   "anyway2": {
     "character": "pink",
     "txt": "There's a clearing up ahead, let's try there first.",
-    "next": "end"
+    "next": "scene4"
   }
 }
