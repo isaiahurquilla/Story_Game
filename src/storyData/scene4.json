@@ -40,8 +40,56 @@
   },
   "owletStart": {
     "character": "owlet",
-    "txt": "Hey lol,",
-    "next": "afterInvestigation"
+    "txt": "Who are you? Have you seen any one else in the area?",
+    "choices": [
+      { "label": "We just arrived, we're stranded here.", "next": "owlet1" },
+      { "label": "We haven't seen anyone but you.", "next": "owlet2" },
+      { "label": "No, we actually need help finding engine parts.", "next": "help" }
+    ]
+  },
+  "owlet1": {
+    "character": "owlet",
+    "txt": "Okay, but you didn't see anyone? Anyone at all?",
+    "next": "owlet2"
+  },
+  "owlet2": {
+    "character": "owlet",
+    "txt": "Oh this is bad. I can't believe this! Everyone's been missing for days!",
+    "choices": [
+      { "label": "Hold up, what happened?", "next": "what" },
+      { "label": "Um, you wouldn't happen to know where we can get engine parts would you?", "next": "help" },
+      { "label": "Thats unfortunate. Bye.", "next": "end" }
+    ]
+  },
+  "what": {
+    "character": "owlet",
+    "txt": "I don't know! One day everyone was here, and the next day they were all gone!",
+    "next": "what2"
+  },
+  "what2": {
+    "character": "owlet",
+    "txt": "But why are you here then? You're not anyone I know.",
+    "next": "what3"
+  },
+  "what3": {
+    "character": "pink",
+    "txt": "We crashed here, we're stuck until we can find parts to fix our engine.",
+    "next": "help2"
+  },
+  "help": {
+    "character": "owlet",
+    "txt": "YOU need help? I don't think I'll be much help by myself.",
+    "next": "help2"
+  },
+  "help2": {
+    "character": "owlet",
+    "txt": "Theres a mechanic in town, but they're missing like everyone else.",
+    "next": "help3"
+  },
+  "help3": {
+    "character": "owlet",
+    "txt": "If you can help me find them, they can help you with the parts you need.",
+    "next": "end"
   },
   "afterInvestigation": {
     "character": "pink",
