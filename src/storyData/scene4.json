@@ -1,46 +1,41 @@
 {
   "start": {
     "character": "pink",
-    "txt": "Oh! There's ",
+    "txt": "Oh! There's a town here!",
     "next": "lookAround"
   },
   "lookAround": {
     "character": "pink",
-    "txt": "I see some interesting things around here. What should we check out first?",
+    "txt": "Maybe the residents can help us out.",
     "choices": [
-      { "label": "Look at the strange rock formation", "next": "rockFormation" },
-      { "label": "Check the old ruins nearby", "next": "oldRuins" },
-      { "label": "Search for any useful supplies", "next": "supplies" }
+      { "label": "Sounds good.", "next": "" },
+      { "label": "I'm not sure...", "next": "well" },
+      { "label": "We don't need the help.", "next": "rusure" }
     ]
   },
-  "rockFormation": {
+  "well": {
     "character": "pink",
-    "txt": "This rock formation is unusual... it almost looks like it was carved intentionally.",
-    "next": "rockFormation2"
-  },
-  "rockFormation2": {
-    "character": "pink",
-    "txt": "There might be some ancient markings here. This could be important!",
+    "txt": "Well... it doesn't hurt to check!",
     "next": "afterInvestigation"
-  },
-  "oldRuins": {
+},
+  "rusure": {
     "character": "pink",
-    "txt": "These ruins look ancient. I wonder what civilization built them...",
+    "txt": "Are you sure? We'll need to find parts for the engine somewhere.",
+    "next": "rusure2"
+  },
+  "rusure2": {
+    "character": "pink",
+    "txt": "If they don't have the parts, they can probably point us in the right direction.",
+    "next": "afterInvestigation"
+},
+  "oldRuins": {
+    "character": "dude",
+    "txt": "These ruins look older than the town. I wonder what civilization built them.",
     "next": "oldRuins2"
   },
   "oldRuins2": {
-    "character": "pink",
-    "txt": "There are some inscriptions I can't quite read. We should remember this location.",
-    "next": "afterInvestigation"
-  },
-  "supplies": {
-    "character": "pink",
-    "txt": "I found some useful supplies! A first aid kit and some tools.",
-    "next": "supplies2"
-  },
-  "supplies2": {
-    "character": "pink",
-    "txt": "This will definitely help us on our journey. Good thinking!",
+    "character": "dude",
+    "txt": "Maybe I'll find out more later.",
     "next": "afterInvestigation"
   },
   "owletStart": {
@@ -48,10 +43,9 @@
     "txt": "Hey lol,",
     "next": "afterInvestigation"
   },
-
   "afterInvestigation": {
     "character": "pink",
-    "txt": "We should keep moving. There might be more dangers ahead, but we're better prepared now.",
+    "txt": "We should keep moving.",
     "next": "end"
   }
 }
