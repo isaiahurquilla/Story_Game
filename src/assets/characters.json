@@ -9,7 +9,7 @@
     "voice": "voice2.ogg",
     "portrait": "owlet_image"
   },
-  "dude": {
+  "player": {
     "name": "player",
     "voice": "voice3.ogg",
     "portrait": "dude_image"
