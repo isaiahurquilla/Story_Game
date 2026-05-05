@@ -136,20 +136,20 @@ SECTION 4: TEAM CONTRIBUTIONS
 ====================
 
 4.1 Role Assignments
-   - [Nebo Paul]: [Primary role/responsibilities]
-   - [Isaiah Urquilla]: [Primary role/responsibilities]
-   - [Joshua Williams]: [Primary role/responsibilities]
+   - [Nebo Paul]: [Project lead, base structure devloper]
+   - [Isaiah Urquilla]: [Overworld devloper, scene builder
+   - [Joshua Williams]: [Backend management, story coordinator]
 
 
 4.2 Contribution Summary
-   - [Team Member]: X commits, Y pull requests, Z features
-   - Major contributions: [List key work]
+   - [Nebo Paul]: X commits, Y pull requests, Z features
+   - Major contributions: [started visual novel components, json stucture for chaacters/scenes, mangeded meetings and trello board.]
 
-    - [Team Member]: X commits, Y pull requests, Z features
-   - Major contributions: [List key work]
+    - [Isaiah Urquilla]: X commits, Y pull requests, Z features
+   - Major contributions: [Created overworld sence logic, overwlorld dialog logic, main menu, player movement, animations]
 
-    - [Team Member]: X commits, Y pull requests, Z features
-   - Major contributions: [List key work]
+    - [Joshua Williams]: X commits, Y pull requests, Z features
+   - Major contributions: [created backend connection, acsync storage hook, profile logic, save/load logic, currency, story writing]
 
 4.3 Code Review & Collaboration
    - How many pull requests were reviewed?
