@@ -1,4 +1,14 @@
 {
+  "shipInspect1": {
+    "character": "player",
+    "txt": "We need to fix this ship soon...",
+    "next": "shipInspect2"
+  },
+  "shipInspect2": {
+    "character": "player",
+    "txt": "Yea, that's not flying again until we fix the engine.",
+    "next": "end"
+  },
   "talkPink": {
     "character": "pink",
     "txt": "Keep up! We are not stopping yet.",

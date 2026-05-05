@@ -35,7 +35,8 @@ import { applyCollision } from '../systems/CollisionSystem';
 import { getNearbyNpc, getNearbyObject, getTouchedExit } from '../systems/InteractionSystem';
 import { SCENE_BACKGROUND_MAP } from '../constants/backgroundConfigs';
 import { PLAYER_ANIMATION_SET, SIDEKICK_ANIMATION_SET, OWLET_ANIMATION_SET, NPC_ANIMATION_MAP } from '../constants/animationSets';
-import { NPC_PORTRAIT_MAP, OBJECT_IMAGE_MAP } from '../constants/imageMaps';
+import { NPC_PORTRAIT_MAP, OBJECT_IMAGE_MAP, ANIMATED_OBJECT_MAP } from '../constants/imageMaps';
+import AnimatedSprite from '../components/AnimatedSprite';
 
 const PLAYER_SIZE = 64;
 const MOVE_SPEED = 4;
@@ -696,11 +697,21 @@ const dialogueCharacters = useMemo(
                 top: item.y,
                 width: item.width,
                 height: item.height,
-                backgroundColor: item.image ? 'transparent' : worldThemeStyle.object,
+                backgroundColor: (item.image || item.animationKey) ? 'transparent' : worldThemeStyle.object,
               },
             ]}
           >
-            {item.image ? (
+            {item.animationKey && ANIMATED_OBJECT_MAP?.[item.animationKey] ? (
+              <AnimatedSprite
+                source={ANIMATED_OBJECT_MAP[item.animationKey].source}
+                totalFrames={ANIMATED_OBJECT_MAP[item.animationKey].totalFrames}
+                firstFrame={ANIMATED_OBJECT_MAP[item.animationKey].firstFrame}
+                lastFrame={ANIMATED_OBJECT_MAP[item.animationKey].lastFrame}
+                speedMs={ANIMATED_OBJECT_MAP[item.animationKey].speedMs}
+                displayWidth={item.width}
+                displayHeight={item.height}
+              />
+            ) : item.image ? (
               <Image
                 source={OBJECT_IMAGE_MAP[item.image]}
                 style={{ width: '100%', height: '100%' }}

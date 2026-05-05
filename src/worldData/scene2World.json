@@ -18,6 +18,15 @@
   ],
   "objects": [
     {
+      "id": "crashedShip",
+      "x": 80,
+      "y": 460,
+      "width": 160,
+      "height": 160,
+      "interactionNode": "shipInspect1",
+      "animationKey": "ship_burn"
+    },
+    {
       "id": "middlePoint",
       "x": 1100,
       "y": 620,
