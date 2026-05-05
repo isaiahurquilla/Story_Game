@@ -15,3 +15,9 @@ export const OBJECT_IMAGE_MAP = {
   'Building 06.png': require('../assets/images/Building 06.png'),
   'Building 07.png': require('../assets/images/Building 07.png'),
 };
+
+// Add ship_burn entry here once src/assets/sprites/Ship/ship_burn.png is saved:
+// ship_burn: { source: require('../assets/sprites/Ship/ship_burn.png'), totalFrames: 18, firstFrame: 2, lastFrame: 6, speedMs: 250 }
+export const ANIMATED_OBJECT_MAP = {
+  ship_burn: { source: require('../assets/sprites/Ship/ship_burn.png'), totalFrames: 18, firstFrame: 2, lastFrame: 6, speedMs: 250 },
+};
