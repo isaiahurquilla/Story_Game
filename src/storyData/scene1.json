@@ -9,20 +9,20 @@
   },
   "start": {
     "character": "pink",
-    "txt": "Did it work???",
+    "txt": "Are you alright?",
     "choices": [
-      { "label": "Play along", "next": "playAlong" },
-      { "label": "Ask what he means", "next": "askWhatMeans" }
+      { "label": "Say you're not hurt", "next": "playAlong" },
+      { "label": "Demand answers", "next": "askWhatMeans" }
     ]
   },
   "playAlong": {
     "character": "player",
-    "txt": "It seems like it...",
+    "txt": "I'm fine...",
     "next": "rumble"
   },
   "askWhatMeans": {
     "character": "player",
-    "txt": "Did what work???",
+    "txt": "No! What just happened?",
     "next": "rumble"
   },
   "rumble": {
@@ -31,16 +31,16 @@
     "effect": "shake",
     "durationMs": 2000,
     "autoAdvance": true,
-    "next": "whatWasThat"
+    "next": "bracingForImpact"
   },
-  "whatWasThat": {
+  "bracingForImpact": {
     "character": "player",
     "txt": "What was that?!",
     "next": "followMe"
   },
   "followMe": {
     "character": "pink",
-    "txt": "No Time! Follow me!",
+    "txt": "Looks like our engine went out. We're lucky to be alive! Let's see where we landed.",
     "next": "scene2"
   }
 }
