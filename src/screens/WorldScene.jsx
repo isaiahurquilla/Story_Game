@@ -34,81 +34,13 @@ import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
 import { getNearbyNpc, getNearbyObject, getTouchedExit } from '../systems/InteractionSystem';
 import { SCENE_BACKGROUND_MAP } from '../constants/backgroundConfigs';
+import { PLAYER_ANIMATION_SET, SIDEKICK_ANIMATION_SET, OWLET_ANIMATION_SET, NPC_ANIMATION_MAP } from '../constants/animationSets';
+import { NPC_PORTRAIT_MAP, OBJECT_IMAGE_MAP } from '../constants/imageMaps';
 
 const PLAYER_SIZE = 64;
 const MOVE_SPEED = 4;
 const LEADER_SPEED = 2.4;
 const SAVE_DEBOUNCE_MS = 350;
-
-const PLAYER_ANIMATION_SET = {
-  idle: require('../assets/sprites/Dude_Monster/Dude_Monster_Idle_4.png'),
-  walk: require('../assets/sprites/Dude_Monster/Dude_Monster_Walk_6.png'),
-  run: require('../assets/sprites/Dude_Monster/Dude_Monster_Run_6.png'),
-  frameWidth: 32,
-  frameHeight: 32,
-  frameCounts: {
-    idle: 4,
-    walk: 6,
-    run: 6,
-  },
-};
-
-const SIDEKICK_ANIMATION_SET = {
-  idle: require('../assets/sprites/Pink_Monster/Pink_Monster_Idle_4.png'),
-  walk: require('../assets/sprites/Pink_Monster/Pink_Monster_Walk_6.png'),
-  run: require('../assets/sprites/Pink_Monster/Pink_Monster_Run_6.png'),
-  frameWidth: 32,
-  frameHeight: 32,
-  frameCounts: {
-    idle: 4,
-    walk: 6,
-    run: 6,
-  },
-};
-
-const OWLET_ANIMATION_SET = {
-  idle: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Idle_4.png'),
-  walk: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Walk_6.png'),
-  run: require('../assets/sprites/Owlet_Monster/Owlet_Monster_Run_6.png'),
-  frameWidth: 32,
-  frameHeight: 32,
-  frameCounts: {
-    idle: 4,
-    walk: 6,
-    run: 6,
-  },
-};
-/*
-Replaced with backgroundConfigs file
-const SCENE_BACKGROUND_MAP = {
-  scene2: require('../assets/backgrounds/scene2-bg.png'),
-};
-*/
-
-const NPC_ANIMATION_MAP = {
-  pink: SIDEKICK_ANIMATION_SET,
-  owlet: OWLET_ANIMATION_SET,
-  //fox: SIDEKICK_ANIMATION_SET,
-  //wolf: SIDEKICK_ANIMATION_SET,
-};
-
-const NPC_PORTRAIT_MAP = {
-  fox: require('../assets/images/fox.png'),
-  wolf: require('../assets/images/wolf.png'),
-  hare: require('../assets/images/hare.png'),
-  dude_image: require('../assets/sprites/Dude_Monster/Dude_Monster.png'),
-  pink_image: require('../assets/sprites/Pink_Monster/Pink_Monster.png'),
-  owlet_image: require('../assets/sprites/Owlet_Monster/Owlet_Monster.png'),
-};
-
-const OBJECT_IMAGE_MAP = {
-  'fox.png': require('../assets/images/fox.png'),
-  'hare.png': require('../assets/images/hare.png'),
-  'wolf.png': require('../assets/images/wolf.png'),
-  'Building 05.png': require('../assets/images/Building 05.png'),
-  'Building 06.png': require('../assets/images/Building 06.png'),
-  'Building 07.png': require('../assets/images/Building 07.png'),
-};
 
 const storyMap = {
   scene1: scene1Story,
@@ -147,9 +79,8 @@ const sceneConfigMap = {
     layout: 'gameplay',
     startNode: null,
     leaderNpcId: 'pink',
-    //leaderNpcId: 'fox',
-    leaderGoalId: 'fallenLog',
-    arrivalNode: 'afterRun',
+    leaderGoalId: 'middlePoint',
+    arrivalNode: null,
     topLabel: 'SCENE 2',
     title: 'Run',
     subtitle: 'The side character takes off. Follow with WASD while the world scrolls full screen.',
@@ -219,6 +150,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const [playerPos, setPlayerPos] = useState(worldData?.spawn || { x: 100, y: 100 });
   const [npcPositions, setNpcPositions] = useState(worldData?.npcs || []);
   const [leaderState, setLeaderState] = useState(createDefaultLeaderState(normalizedSceneId));
+  const [leaderGoalId, setLeaderGoalId] = useState(sceneConfig.leaderGoalId);
   const [cameraPos, setCameraPos] = useState({ x: 0, y: 0 });
   const [facing, setFacing] = useState('down');
   const [flashVisible, setFlashVisible] = useState(false);
@@ -253,10 +185,10 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
 
 const dialogueCharacters = useMemo(
   () => ({
-    ...characters, // spreads the JSON ("pink", "owlet", "dude")
+    ...characters,
     player: {
-      ...characters.dude, // Links the 'player' ID to 'dude' attributes
-      name: profileName || characters.dude.name, // Overrides name if you have a custom profile
+      ...characters.player,
+      name: profileName || characters.player.name,
     },
     system: {
       name: ' ',
@@ -345,6 +277,11 @@ const dialogueCharacters = useMemo(
       if ((key === 'e' || key === 'enter') && !currentNode) {
         beginNpcInteraction();
       }
+
+      if (key === ' ' && currentNode && activeNode && !activeNode.choices && activeNode.next) {
+        event.preventDefault();
+        handleSelect(activeNode.next);
+      }
     };
 
     const handleKeyUp = (event) => {
@@ -410,10 +347,10 @@ const dialogueCharacters = useMemo(
   }, [ready, canMove, worldData, worldWidth, worldHeight, facing]);
 
   useEffect(() => {
-    if (!ready || !sceneConfig.leaderNpcId || !sceneConfig.leaderGoalId) return undefined;
+    if (!ready || !sceneConfig.leaderNpcId || !leaderGoalId) return undefined;
     if (!leaderState.active || currentNode) return undefined;
 
-    const goal = (worldData?.objects || []).find((item) => item.id === sceneConfig.leaderGoalId);
+    const goal = (worldData?.objects || []).find((item) => item.id === leaderGoalId);
     if (!goal) return undefined;
 
     const tickLeader = () => {
@@ -448,7 +385,9 @@ const dialogueCharacters = useMemo(
 
       if (reachedGoal) {
         setLeaderState({ active: false, finished: true });
-        if (sceneConfig.arrivalNode && storyData?.[sceneConfig.arrivalNode]) {
+        if (activeNode?.nextLeaderGoal && activeNode?.next) {
+          handleSelect(activeNode.next);
+        } else if (sceneConfig.arrivalNode && storyData?.[sceneConfig.arrivalNode]) {
           setCurrentNode(sceneConfig.arrivalNode);
         }
         return;
@@ -464,7 +403,7 @@ const dialogueCharacters = useMemo(
         cancelAnimationFrame(leaderFrameRef.current);
       }
     };
-  }, [ready, currentNode, leaderState.active, worldData, storyData, sceneConfig.leaderNpcId, sceneConfig.leaderGoalId, sceneConfig.arrivalNode]);
+  }, [ready, currentNode, leaderState.active, leaderGoalId, worldData, storyData, sceneConfig.leaderNpcId, sceneConfig.arrivalNode, activeNode]);
 
   useEffect(() => {
     setCameraPos(
@@ -554,7 +493,12 @@ const dialogueCharacters = useMemo(
       }, effectDuration);
     }
 
-    if (activeNode.autoAdvance && activeNode.next) {
+    if (activeNode.nextLeaderGoal) {
+      setLeaderGoalId(activeNode.nextLeaderGoal);
+      setLeaderState({ active: true, finished: false });
+    }
+
+    if (activeNode.autoAdvance && activeNode.next && !activeNode.nextLeaderGoal) {
       autoAdvanceTimeout.current = setTimeout(() => {
         handleSelect(activeNode.next);
       }, effectDuration);
@@ -862,52 +806,6 @@ const dialogueCharacters = useMemo(
             <Text style={styles.topMenuButtonText}>Exit</Text>
           </TouchableOpacity>
 
-          
-          {/*
-          this was a banner with a scene description
-          <View
-            style={[
-              styles.vnStage,
-              {
-                backgroundColor: sceneConfig.palette.panel,
-                borderColor: sceneConfig.palette.cardBorder,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.vnBackdropGlow,
-                { backgroundColor: sceneConfig.palette.overlayOne },
-              ]}
-            />
-            <View
-              style={[
-                styles.vnBackdropGlowSecondary,
-                { backgroundColor: sceneConfig.palette.overlayTwo },
-              ]}
-            />
-
-            <View style={styles.vnStageTextWrap}>
-              <Text style={[styles.sceneOverline, { color: sceneConfig.palette.accent }]}>
-                {sceneConfig.topLabel}
-              </Text>
-              <Text style={styles.sceneTitle}>{sceneConfig.title}</Text>
-              <Text style={styles.sceneSubtitle}>{sceneConfig.subtitle}</Text>
-            </View>
-
-            {speakerPortrait ? (
-              <Image source={speakerPortrait} resizeMode="contain" style={styles.vnSpeakerVisual} />
-            ) : (
-              <View
-                style={[
-                  styles.vnSpeakerPlaceholder,
-                  { borderColor: sceneConfig.palette.cardBorder },
-                ]}
-              />
-            )}
-          </View>
-          */}
-
           <View
             style={[
               styles.vnDialoguePanel,
@@ -1058,71 +956,12 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 6,
   },
-  sceneTitle: {
-    color: '#ffffff',
-    fontSize: 34,
-    fontWeight: '900',
-    marginBottom: 6,
-  },
-  sceneSubtitle: {
-    color: '#d8d1ea',
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: 320,
-  },
   vnContainer: {
     flex: 1,
     paddingHorizontal: 14,
     paddingTop: 18,
     paddingBottom: 16,
     justifyContent: 'space-between',
-  },
-  vnStage: {
-    flex: 1,
-    minHeight: 240,
-    borderRadius: 26,
-    borderWidth: 1,
-    overflow: 'hidden',
-    paddingHorizontal: 18,
-    paddingTop: 26,
-    justifyContent: 'space-between',
-  },
-  vnStageTextWrap: {
-    zIndex: 2,
-  },
-  vnBackdropGlow: {
-    position: 'absolute',
-    width: 260,
-    height: 260,
-    borderRadius: 999,
-    left: -50,
-    top: 20,
-  },
-  vnBackdropGlowSecondary: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 999,
-    right: -40,
-    bottom: -50,
-  },
-  vnSpeakerVisual: {
-    position: 'absolute',
-    right: 8,
-    bottom: 0,
-    width: 220,
-    height: 220,
-    opacity: 0.95,
-  },
-  vnSpeakerPlaceholder: {
-    position: 'absolute',
-    right: 18,
-    bottom: 18,
-    width: 180,
-    height: 180,
-    borderRadius: 30,
-    borderWidth: 1,
-    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   vnDialoguePanel: {
     marginTop: 14,

@@ -2,11 +2,17 @@
   "talkPink": {
     "character": "pink",
     "txt": "Keep up! We are not stopping yet.",
-    "next": "end"
+    "next": "atMiddle"
   },
-  "afterRun": {
+  "atMiddle": {
     "character": "pink",
-    "txt": "There. Keep your head down. We can breathe for a second.",
+    "txt": "This way! There's shelter on the right.",
+    "nextLeaderGoal": "rightPoint",
+    "next": "atRight"
+  },
+  "atRight": {
+    "character": "pink",
+    "txt": "Just a little more, I think I see a village.",
     "next": "end"
   }
 }
