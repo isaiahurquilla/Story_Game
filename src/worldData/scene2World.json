@@ -41,17 +41,48 @@
       "width": 80,
       "height": 80,
       "visible": false
+    },
+    {
+      "id": "gear_1",
+      "type": "currency",
+      "x": 600,
+      "y": 620,
+      "width": 48,
+      "height": 48,
+      "animationKey": "purple_gear",
+      "amount": 10
+    },
+    {
+      "id": "gear_2",
+      "type": "currency",
+      "x": 1300,
+      "y": 550,
+      "width": 48,
+      "height": 48,
+      "animationKey": "purple_gear",
+      "amount": 10
+    },
+    {
+      "id": "gear_3",
+      "type": "currency",
+      "x": 1800,
+      "y": 650,
+      "width": 48,
+      "height": 48,
+      "animationKey": "purple_gear",
+      "amount": 10
     }
   ],
   "colliders": [],
   "exits": [
-  {
-    "id": "toScene3",
-    "x": 2100, 
-    "y": 0,
-    "width": 100,
-    "height": 900,
-    "targetScene": "scene3"
-  }
-]
+    {
+      "id": "toScene3",
+      "x": 2100,
+      "y": 0,
+      "width": 100,
+      "height": 900,
+      "targetScene": "scene3"
+    }
+  ]
 }
+

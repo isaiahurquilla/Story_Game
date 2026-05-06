@@ -20,4 +20,9 @@ export const OBJECT_IMAGE_MAP = {
 // ship_burn: { source: require('../assets/sprites/Ship/ship_burn.png'), totalFrames: 18, firstFrame: 2, lastFrame: 6, speedMs: 250 }
 export const ANIMATED_OBJECT_MAP = {
   ship_burn: { source: require('../assets/sprites/Ship/ship_burn.png'), totalFrames: 18, firstFrame: 2, lastFrame: 6, speedMs: 250 },
+  purple_gear: { 
+    source: require('../assets/sprites/Gear/purple_gear_sheet.png'), 
+    totalFrames: 8, 
+    speedMs: 120 
+  },
 };

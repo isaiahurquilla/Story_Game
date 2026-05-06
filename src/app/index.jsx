@@ -59,7 +59,7 @@ export default function Index() {
       <View style={styles.profileInfo}>
         <Text style={styles.profileName}>{item.name}</Text>
         <Text style={styles.profileMeta}>Traveler of DreamLand</Text>
-        <Text style={styles.currencyText}>💰 {item.currency || 0}</Text>
+        <Text style={styles.currencyText}>⚙️ {item.currency || 0}</Text>
         <Text style={styles.profileDate}>
           Began {new Date(item.createdAt).toLocaleDateString()}
         </Text>

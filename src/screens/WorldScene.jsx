@@ -32,7 +32,7 @@ import scene4World from '../worldData/scene4World.json';
 import { getMovementVector, getFacingFromVector } from '../systems/PlayerController';
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
-import { getNearbyNpc, getNearbyObject, getTouchedExit } from '../systems/InteractionSystem';
+import { getNearbyNpc, getNearbyObject, getTouchedExit, isNearTarget } from '../systems/InteractionSystem';
 import { SCENE_BACKGROUND_MAP } from '../constants/backgroundConfigs';
 import { PLAYER_ANIMATION_SET, SIDEKICK_ANIMATION_SET, OWLET_ANIMATION_SET, NPC_ANIMATION_MAP } from '../constants/animationSets';
 import { NPC_PORTRAIT_MAP, OBJECT_IMAGE_MAP, ANIMATED_OBJECT_MAP } from '../constants/imageMaps';
@@ -157,6 +157,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const [flashVisible, setFlashVisible] = useState(false);
   const [interactionTarget, setInteractionTarget] = useState(null);
   const [profileName, setProfileName] = useState('Player');
+  const [currentCurrency, setCurrentCurrency] = useState(0);
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const autoAdvanceTimeout = useRef(null);
@@ -226,10 +227,12 @@ const dialogueCharacters = useMemo(
   const defaultNpcs = worldData.npcs || [];
 
   let nextProfileName = 'Player';
+  let nextCurrency = 0; // ⚙️ 1. Initialize a temporary variable
 
   if (profileId) {
     const profile = await getProfileById(profileId);
     nextProfileName = profile?.name?.trim() || 'Player';
+    nextCurrency = profile?.currency || 0; // ⚙️ 2. Pull the saved value from the profile
   }
 
   let nextNode = sceneConfig.startNode ?? null;
@@ -252,7 +255,11 @@ const dialogueCharacters = useMemo(
     }
   }
 
+ // 🔄 This makes gears respawn while keeping story progress safe
+  nextClaimedRewards = nextClaimedRewards.filter(id => !id.toString().startsWith('gear_'));
+
   setProfileName(nextProfileName);
+  setCurrentCurrency(nextCurrency); // ⚙️ 3. Apply the currency to the HUD state
   setCurrentNode(nextNode);
   setHistory(nextHistory);
   setClaimedRewards(nextClaimedRewards);
@@ -431,6 +438,35 @@ const dialogueCharacters = useMemo(
     });
 
     setInteractionTarget(nearbyObject || nearbyNpc || null);
+
+    // --- ⚙️ CURRENCY COLLECTION LOGIC ---
+const nearbyCurrency = (worldData?.objects || []).find((item) => {
+  if (item.type !== 'currency' || claimedRewards.includes(item.id)) return false;
+  
+  // Reuse your circle-based radius check
+  return isNearTarget(playerPos, PLAYER_SIZE, item.x + (item.width/2), item.y + (item.height/2), 60);
+});
+
+if (nearbyCurrency && !currentNode) {
+  // 1. Mark as collected immediately to make it disappear
+  setClaimedRewards((prev) => [...prev, nearbyCurrency.id]);
+  
+  // 2. Update the actual wallet AND the on-screen HUD
+  addCurrency(profileId, nearbyCurrency.amount || 10).then(async () => {
+    // This fetches the new total from the profile service
+    const updatedProfile = await getProfileById(profileId);
+    if (updatedProfile) {
+      setCurrentCurrency(updatedProfile.currency); // This updates the number on your screen
+    }
+  });
+  
+shakeAnim.setValue(0);
+Animated.sequence([
+  Animated.timing(shakeAnim, { toValue: 4, duration: 50, useNativeDriver: true }),
+  Animated.timing(shakeAnim, { toValue: -4, duration: 50, useNativeDriver: true }),
+  Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+]).start();
+}
 
     const touchedExit = getTouchedExit({
       playerPos,
@@ -634,6 +670,8 @@ const dialogueCharacters = useMemo(
         },
       ]}
     >
+
+      
       <View
         style={[
           styles.world,
@@ -687,20 +725,25 @@ const dialogueCharacters = useMemo(
             </View>
           ))}
 
-{(worldData.objects || []).filter((item) => item.visible !== false).map((item) => (
-          <View
-            key={item.id}
-            style={[
-              styles.objectVisual,
-              {
-                left: item.x,
-                top: item.y,
-                width: item.width,
-                height: item.height,
-                backgroundColor: (item.image || item.animationKey) ? 'transparent' : worldThemeStyle.object,
-              },
-            ]}
-          >
+{(worldData.objects || [])
+  .filter((item) => 
+    item.visible !== false && 
+    !claimedRewards.includes(item.id) // ⚙️ This line makes the gear disappear when collected
+  )
+  .map((item) => (
+    <View
+      key={item.id}
+      style={[
+        styles.objectVisual,
+        {
+          left: item.x,
+          top: item.y,
+          width: item.width,
+          height: item.height,
+          backgroundColor: (item.image || item.animationKey) ? 'transparent' : worldThemeStyle.object,
+        },
+      ]}
+    >
             {item.animationKey && ANIMATED_OBJECT_MAP?.[item.animationKey] ? (
               <AnimatedSprite
                 source={ANIMATED_OBJECT_MAP[item.animationKey].source}
@@ -869,6 +912,13 @@ const dialogueCharacters = useMemo(
     <View style={[styles.root, { backgroundColor: sceneConfig.palette.background }]}>
       <Animated.View style={[styles.gameplayContainer, { transform: [{ translateX: shakeAnim }] }]}>
         {renderWorld()}
+
+        {/* 💰 PASTE YOUR LIVE CURRENCY HUD HERE */}
+        <View style={styles.currencyHud}>
+          <Text style={styles.currencyHudText}>
+            ⚙️ {profileName === 'Player' ? '0' : currentCurrency}
+          </Text>
+        </View>
 
         <TouchableOpacity style={styles.topMenuButton} onPress={onGoToMenu}>
           <Text style={styles.topMenuButtonText}>Exit</Text>
@@ -1134,6 +1184,27 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     opacity: 0.95,
   },
+
+  currencyHud: {
+    position: 'absolute',
+    top: 16,               // Distance from the top
+    alignSelf: 'center',    // ⚙️ This centers it horizontally
+    backgroundColor: 'rgba(27, 19, 40, 0.85)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,      // More rounded for a centered look
+    zIndex: 100,
+    borderWidth: 1,
+    borderColor: '#8b5cf6',
+    flexDirection: 'row',  // Keeps icon and text in a line
+    alignItems: 'center',
+  },
+  currencyHudText: {
+    color: '#f2cf66',
+    fontWeight: '800',
+    fontSize: 20,          // Slightly larger for better visibility
+  },
+
   vnFullscreenBackground: {
     position: 'absolute',
     top: 0,
