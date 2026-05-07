@@ -162,12 +162,15 @@ SECTION 4: TEAM CONTRIBUTIONS
 
 
 4.2 Contribution Summary
-some commits were squashed, so only stats from the last few weeks are easily accessible 
-  - Nebo Paul: 25+ commits, 12 pull requests, 6 features.
+Some commits were squashed, so only stats from the last few weeks are easily accessible.
+Git commit number does not necessarily reflect the amount each member contributed to the project, some commits were larger than others.
+Other contributions include shared assets and story writing documents.
+
+  - Nebo Paul: 35+ commits, 12 pull requests, 6 features.
     Major contributions: Started visual novel components, JSON structure for characters/scenes, UI polish, managed meetings, documentation, and Trello board.
-  - Isaiah Urquilla: 15+ commits, 10 pull requests, 7 features.
+  - Isaiah Urquilla: 25+ commits, 10 pull requests, 7 features.
     Major contributions: Created overworld scene logic, overworld dialog logic, main menu, player movement, animations, gathered assets, and story writing.
-  - Joshua Williams: 15+ commits, 3 pull requests, 6 features.
+  - Joshua Williams: 20+ commits, 3 pull requests, 6 features.
     Major contributions: Created backend connection, Async storage hook, profile logic, save/load logic, currency system, gathered assets, and story writing.
 
 
