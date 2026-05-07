@@ -41,6 +41,8 @@
       "width": 150,
       "height": 50,
       "interactionNode": "leftHouse",
+      "requiredItem": "keyPurple",
+      "keyInteractionNode": "leftHouseUnlocked",
       "visible": false
     },
     {
@@ -54,14 +56,25 @@
       "visible": false
     },
     {
-      "id": "oldRuins",
-      "label": "Ancient Ruins",
-      "x": 1200,
-      "y": 450,
-      "width": 150,
-      "height": 100,
-      "interactionNode": "oldRuins",
-      "visible": false
+      "id": "Chest",
+      "type": "chest",
+      "animationKey": "chest_closed",
+      "openAnimationKey": "chest_open",
+      "x": 1676,
+      "y": 500,
+      "width": 50,
+      "height": 40,
+      "interactionNode": "Chest"
+    },
+    {
+      "id": "keyPurple",
+      "type": "chestKey",
+      "chestId": "Chest",
+      "image": "KeyPurple.png",
+      "x": 1680,
+      "y": 490,
+      "width": 60,
+      "height": 40
     }
   ],
   "colliders": [

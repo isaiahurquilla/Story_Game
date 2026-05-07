@@ -1,0 +1,56 @@
+{
+  "start": {
+    "character": "Mechanic",
+    "txt": "I really should've locked the chest too...",
+     "next": "d2"
+  },
+  "d2": {
+    "character": "Mechanic",
+    "txt": "What do you want?",
+    "choices": [
+      { "label": "I need your help fixing my ship.", "next": "help" },
+      { "label": "Why did you lock yourself away?", "next": "why" }
+    ]   
+  },
+  "help": {
+    "character": "Mechanic",
+    "txt": "You broke in my home to ask for help? Not exactly the best first impression.",
+    "next": "help2"
+  },
+  "help2": {
+    "character": "Mechanic",
+    "txt": "*Sigh* Whatever... I guess I will if it'll get you to leave me alone.",
+    "next": "anyway"
+  },
+  "why": {
+    "character": "Mechanic",
+    "txt": "Those damn devils took everyone else, I didn't want to be next.",
+    "next": "why2"
+  },
+  "why2": {
+    "character": "Mechanic",
+    "txt": "Anyways, I heard you talking to feather cheeks outside.",
+    "next": "why3"
+  },
+  "why3": {
+    "character": "Mechanic",
+    "txt": "I suppose I can try to help you fix up your ship.",
+    "next": "anyway"
+  },
+  "anyway": {
+    "character": "Mechanic",
+    "txt": "But I'll need the correct parts to do so, and I dont have any lying around.",
+    "next": "anyway2"
+  },
+  "anyway2": {
+    "character": "Mechanic",
+    "txt": "Collect 4 parts and I'll see what I can do.",
+    "next": "anyway3"
+  },
+  "anyway3": {
+    "character": "Mechanic",
+    "txt": "You might find what you need in CryptTown, but I'd be careful if I were you. The place is crawling with devils.",
+    "next": "end"
+    }
+}
+

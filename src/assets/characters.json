@@ -13,5 +13,9 @@
     "name": "player",
     "voice": "voice3.ogg",
     "portrait": "dude_image"
+  },
+  "Mechanic": {
+    "name": "Mechanic",
+    "portrait": "mechanic_image"
   }
 }

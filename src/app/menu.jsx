@@ -7,6 +7,7 @@ import {
   Modal,
   Pressable,
   SafeAreaView,
+  ScrollView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -14,11 +15,7 @@ import {
   loadGameForProfile,
   deleteGameForProfile,
 } from '../services/profileService';
-
-const AVAILABLE_SCENES = [
-  { key: 'scene1', label: 'Scene 1' },
-  { key: 'scene2', label: 'Scene 2' },
-];
+import { SCENES } from '../constants/scenes';
 
 export default function Menu() {
   const router = useRouter();
@@ -106,61 +103,63 @@ export default function Menu() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={styles.hero}>
-        <Text style={styles.overline}>CURRENT TALE</Text>
-        <Text style={styles.title}>DreamLand</Text>
-        <Text style={styles.subtitle}>Traveler: {profile.name}</Text>
-      </View>
-
-      <View style={styles.profileCard}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>
-            {profile.name?.charAt(0)?.toUpperCase() || '?'}
-          </Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <Text style={styles.overline}>CURRENT TALE</Text>
+          <Text style={styles.title}>DreamLand</Text>
+          <Text style={styles.subtitle}>Traveler: {profile.name}</Text>
         </View>
 
-        <View style={styles.profileTextWrap}>
-          <Text style={styles.profileName}>{profile.name}</Text>
-          <Text style={styles.profileMeta}>The story awaits your next step.</Text>
-          <Text style={styles.currencyText}>💰 {profile.currency || 0}</Text>
-        </View>
-      </View>
-
-      <View style={styles.menuCard}>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleNewGame}>
-          <Text style={styles.primaryButtonText}>Begin New Tale</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => setSceneModalVisible(true)}
-        >
-          <Text style={styles.primaryButtonText}>Choose Chapter</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.primaryButton, !saveData && styles.disabledButton]}
-          onPress={handleLoadGame}
-          disabled={!saveData}
-        >
-          <Text style={styles.primaryButtonText}>
-            {saveData ? 'Continue Saved Tale' : 'No Saved Tale Found'}
-          </Text>
-        </TouchableOpacity>
-
-        {saveData && (
-          <View style={styles.savePanel}>
-            <Text style={styles.saveLabel}>Last remembered moment</Text>
-            <Text style={styles.saveInfo}>
-              {new Date(saveData.updatedAt).toLocaleString()}
+        <View style={styles.profileCard}>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>
+              {profile.name?.charAt(0)?.toUpperCase() || '?'}
             </Text>
           </View>
-        )}
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={goBackToProfiles}>
-          <Text style={styles.secondaryButtonText}>Change Traveler</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.profileTextWrap}>
+            <Text style={styles.profileName}>{profile.name}</Text>
+            <Text style={styles.profileMeta}>The story awaits your next step.</Text>
+            <Text style={styles.currencyText}>💰 {profile.currency || 0}</Text>
+          </View>
+        </View>
+
+        <View style={styles.menuCard}>
+          <TouchableOpacity style={styles.primaryButton} onPress={handleNewGame}>
+            <Text style={styles.primaryButtonText}>Begin New Tale</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => setSceneModalVisible(true)}
+          >
+            <Text style={styles.primaryButtonText}>Choose Chapter</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.primaryButton, !saveData && styles.disabledButton]}
+            onPress={handleLoadGame}
+            disabled={!saveData}
+          >
+            <Text style={styles.primaryButtonText}>
+              {saveData ? 'Continue Saved Tale' : 'No Saved Tale Found'}
+            </Text>
+          </TouchableOpacity>
+
+          {saveData && (
+            <View style={styles.savePanel}>
+              <Text style={styles.saveLabel}>Last remembered moment</Text>
+              <Text style={styles.saveInfo}>
+                {new Date(saveData.updatedAt).toLocaleString()}
+              </Text>
+            </View>
+          )}
+
+          <TouchableOpacity style={styles.secondaryButton} onPress={goBackToProfiles}>
+            <Text style={styles.secondaryButtonText}>Change Traveler</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       <Modal
         visible={sceneModalVisible}
@@ -175,7 +174,7 @@ export default function Menu() {
           <Pressable style={styles.modalCard} onPress={() => {}}>
             <Text style={styles.modalTitle}>Choose a Chapter</Text>
 
-            {AVAILABLE_SCENES.map((scene) => (
+            {SCENES.map((scene) => (
               <TouchableOpacity
                 key={scene.key}
                 style={styles.modalSceneButton}
@@ -204,6 +203,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#1b1328',
     paddingHorizontal: 20,
     paddingTop: 18,
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   hero: {
     alignItems: 'center',

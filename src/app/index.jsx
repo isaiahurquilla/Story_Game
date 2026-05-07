@@ -3,10 +3,10 @@ import {
   View,
   Text,
   TextInput,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveProfile, loadProfiles, deleteProfile } from '../services/profileService';
@@ -48,8 +48,8 @@ export default function Index() {
     setProfiles(updatedList);
   };
 
-  const renderProfile = ({ item }) => (
-    <View style={styles.profileCard}>
+  const renderProfile = (item) => (
+    <View key={item.id} style={styles.profileCard}>
       <View style={styles.profileBadge}>
         <Text style={styles.profileBadgeText}>
           {item.name?.charAt(0)?.toUpperCase() || '?'}
@@ -87,46 +87,46 @@ export default function Index() {
     <SafeAreaView style={styles.screen}>
       <View style={styles.background} />
 
-      <View style={styles.header}>
-        <Text style={styles.kicker}>A STORY OF STRANGE WELCOMES</Text>
-        <Text style={styles.title}>DreamLand</Text>
-        <Text style={styles.subtitle}>
-          Choose whose story will continue.
-        </Text>
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.kicker}>A STORY OF STRANGE WELCOMES</Text>
+          <Text style={styles.title}>DreamLand</Text>
+          <Text style={styles.subtitle}>
+            Choose whose story will continue.
+          </Text>
+        </View>
 
-      <View style={styles.createCard}>
-        <Text style={styles.sectionTitle}>Choose Your Name</Text>
+        <View style={styles.createCard}>
+          <Text style={styles.sectionTitle}>Choose Your Name</Text>
 
-        <TextInput
-          placeholder="Enter a traveler name"
-          placeholderTextColor="#9c8db1"
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
-        />
+          <TextInput
+            placeholder="Enter a traveler name"
+            placeholderTextColor="#9c8db1"
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+          />
 
-        <TouchableOpacity style={styles.primaryButton} onPress={handleCreateProfile}>
-          <Text style={styles.primaryButtonText}>Begin New Tale</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity style={styles.primaryButton} onPress={handleCreateProfile}>
+            <Text style={styles.primaryButtonText}>Begin New Tale</Text>
+          </TouchableOpacity>
+        </View>
 
-      <Text style={styles.listTitle}>Existing Tales</Text>
+        <Text style={styles.listTitle}>Existing Tales</Text>
 
-      <FlatList
-        data={profiles}
-        keyExtractor={(item) => item.id}
-        renderItem={renderProfile}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No tale has begun yet.</Text>
-            <Text style={styles.emptyText}>
-              Create a profile above to enter the story.
-            </Text>
-          </View>
-        }
-      />
+        <View style={styles.listContent}>
+          {profiles.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>No tale has begun yet.</Text>
+              <Text style={styles.emptyText}>
+                Create a profile above to enter the story.
+              </Text>
+            </View>
+          ) : (
+            profiles.map((item) => renderProfile(item))
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -139,6 +139,9 @@ const styles = StyleSheet.create({
   background: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#1b1328',
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   header: {
     paddingTop: 28,
@@ -212,7 +215,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
   },
   profileCard: {
     flexDirection: 'row',

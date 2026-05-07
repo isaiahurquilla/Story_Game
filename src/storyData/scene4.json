@@ -29,32 +29,32 @@
     "next": "afterInvestigation"
 },
   "oldRuins": {
-    "character": "dude",
+    "character": "player",
     "txt": "These ruins look older than the town. I wonder what civilization built them.",
     "next": "oldRuins2"
   },
   "oldRuins2": {
-    "character": "dude",
+    "character": "player",
     "txt": "Maybe I'll find out more later.",
     "next": "afterInvestigation"
   },
   "leftHouse": {
-    "character": "dude",
+    "character": "player",
     "txt": "The door is locked, but the lights are on.",
     "next": "leftHouse2"
   },
   "leftHouse2": {
-    "character": "dude",
-    "txt": "It doesn't look like anyone's inside.",
+    "character": "player",
+    "txt": "I'll keep an eye out for the owner, maybe I can talk to them.",
     "next": "afterInvestigation"
   },
   "rightHouse": {
-    "character": "dude",
+    "character": "player",
     "txt": "This house has a bowl of cat food at the door.",
     "next": "rightHouse2"
   },
   "rightHouse2": {
-    "character": "dude",
+    "character": "player",
     "txt": "It looks stale and moldy.",
     "next": "afterInvestigation"
   },
@@ -108,12 +108,37 @@
   },
   "help3": {
     "character": "owlet",
-    "txt": "If you can help me find them, they can help you with the parts you need.",
+    "txt": "If you can help me find them, they can help you with the parts you need. Checking the houses might be a good place to start.",
     "next": "end"
   },
   "afterInvestigation": {
     "character": "pink",
     "txt": "We should keep moving.",
     "next": "end"
+  },
+  "Chest": {
+    "character": "player",
+    "txt": "There's a chest here. Let me see what's inside.",
+    "next": "chestOpening"
+  },
+  "chestOpening": {
+    "openChest": "Chest",
+    "character": "player",
+    "txt": "A key!",
+    "next": "chestKeyPickup"
+  },
+  "chestKeyPickup": {
+    "claimItem": "keyPurple",
+    "character": "player",
+    "txt": "I'll hold onto this.",
+    "next": "end"
+  },
+  "leftHouseUnlocked": {
+    "character": "player",
+    "txt": "It worked!",
+    "next": "throwKeyAnim"
+  },
+  "throwKeyAnim": {
+    "throwKey": true
   }
 }

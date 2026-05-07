@@ -8,6 +8,7 @@ import {
   Platform,
   Image,
   Alert,
+  ScrollView,
   useWindowDimensions,
 } from 'react-native';
 import DialogBox from '../components/DialogBox';
@@ -22,10 +23,7 @@ import {
   getProfileById,
 } from '../services/profileService';
 import characters from '../assets/characters.json';
-import scene1Story from '../storyData/scene1.json';
-import scene2Story from '../storyData/scene2.json';
-import scene3Story from '../storyData/scene3.json';
-import scene4Story from '../storyData/scene4.json';
+import storyMap from '../constants/storyMap';
 import scene1World from '../worldData/scene1World.json';
 import scene2World from '../worldData/scene2World.json';
 import scene4World from '../worldData/scene4World.json';
@@ -43,18 +41,12 @@ const MOVE_SPEED = 4;
 const LEADER_SPEED = 2.4;
 const SAVE_DEBOUNCE_MS = 350;
 
-const storyMap = {
-  scene1: scene1Story,
-  scene2: scene2Story,
-  scene3: scene3Story,
-  scene4: scene4Story,
-};
-
 const worldMap = {
   scene1: scene1World,
   scene2: scene2World,
   scene3: scene1World,
   scene4: scene4World,
+  scene5: scene1World,
 };
 
 // scene config here!
@@ -130,6 +122,23 @@ const sceneConfigMap = {
       overlayTwo: 'rgba(58, 176, 94, 0.16)',
     },
   },
+  scene5: {
+    layout: 'vn',
+    startNode: 'start',
+    topLabel: 'SCENE 5',
+    title: 'Inside',
+    subtitle: '',
+    hint: 'Tap the dialogue box to advance.',
+    palette: {
+      background: '#120c1e',
+      panel: '#1d1230',
+      accent: '#d3b7ff',
+      accentSoft: 'rgba(152, 105, 255, 0.18)',
+      cardBorder: 'rgba(216, 196, 255, 0.42)',
+      overlayOne: 'rgba(255, 122, 89, 0.18)',
+      overlayTwo: 'rgba(119, 77, 255, 0.22)',
+    },
+  },
 };
 
 const createDefaultLeaderState = (sceneId) => ({
@@ -150,6 +159,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const [claimedRewards, setClaimedRewards] = useState([]);
   const [playerPos, setPlayerPos] = useState(worldData?.spawn || { x: 100, y: 100 });
   const [npcPositions, setNpcPositions] = useState(worldData?.npcs || []);
+  const [openedChests, setOpenedChests] = useState([]);
   const [leaderState, setLeaderState] = useState(createDefaultLeaderState(normalizedSceneId));
   const [leaderGoalId, setLeaderGoalId] = useState(sceneConfig.leaderGoalId);
   const [cameraPos, setCameraPos] = useState({ x: 0, y: 0 });
@@ -160,6 +170,9 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const [currentCurrency, setCurrentCurrency] = useState(0);
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
+  const throwAnim = useRef(new Animated.Value(0)).current;
+  const [isThrowingKey, setIsThrowingKey] = useState(false);
+  const keyThrowTargetRef = useRef({ x: 0, y: 0 });
   const autoAdvanceTimeout = useRef(null);
   const animationFrameRef = useRef(null);
   const leaderFrameRef = useRef(null);
@@ -168,6 +181,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const shakeTimeoutRef = useRef(null);
   const shakeLoopRef = useRef(null);
   const keysPressed = useRef({ w: false, a: false, s: false, d: false });
+  const facingRef = useRef('down');
 
   const worldWidth = worldData?.world?.width || 1400;
   const worldHeight = worldData?.world?.height || 900;
@@ -213,8 +227,22 @@ const dialogueCharacters = useMemo(
 
   const beginNpcInteraction = useCallback(() => {
     if (!interactionTarget || currentNode) return;
+
+    if (
+      interactionTarget.requiredItem &&
+      interactionTarget.keyInteractionNode &&
+      claimedRewards.includes(interactionTarget.requiredItem)
+    ) {
+      keyThrowTargetRef.current = {
+        x: interactionTarget.x + (interactionTarget.width || 0) / 2,
+        y: interactionTarget.y + (interactionTarget.height || 0) / 2,
+      };
+      setCurrentNode(interactionTarget.keyInteractionNode);
+      return;
+    }
+
     setCurrentNode(interactionTarget.interactionNode || 'start');
-  }, [interactionTarget, currentNode]);
+  }, [interactionTarget, currentNode, claimedRewards]);
 
   useEffect(() => {
     const setup = async () => {
@@ -238,6 +266,7 @@ const dialogueCharacters = useMemo(
   let nextNode = sceneConfig.startNode ?? null;
   let nextHistory = [];
   let nextClaimedRewards = [];
+  let nextOpenedChests = [];
   let nextPlayerPos = defaultSpawn;
   let nextNpcPositions = defaultNpcs;
   let nextLeaderState = createDefaultLeaderState(normalizedSceneId);
@@ -249,6 +278,7 @@ const dialogueCharacters = useMemo(
       nextNode = savedGame.currentNode ?? nextNode;
       nextHistory = savedGame.history || [];
       nextClaimedRewards = savedGame.claimedRewards || [];
+      nextOpenedChests = savedGame.openedChests || [];
       nextPlayerPos = savedGame.playerPos || defaultSpawn;
       nextNpcPositions = savedGame.npcPositions || defaultNpcs;
       nextLeaderState = savedGame.leaderState || nextLeaderState;
@@ -263,6 +293,7 @@ const dialogueCharacters = useMemo(
   setCurrentNode(nextNode);
   setHistory(nextHistory);
   setClaimedRewards(nextClaimedRewards);
+  setOpenedChests(nextOpenedChests);
   setPlayerPos(nextPlayerPos);
   setNpcPositions(nextNpcPositions);
   setLeaderState(nextLeaderState);
@@ -334,12 +365,14 @@ const dialogueCharacters = useMemo(
             worldHeight,
           });
 
-          const finalPos = collided || prev;
-          const nextFacing = getFacingFromVector(dx, dy, facing);
-          setFacing(nextFacing);
-
-          return finalPos;
+          return collided || prev;
         });
+
+        const nextFacing = getFacingFromVector(dx, dy, facingRef.current);
+        if (nextFacing !== facingRef.current) {
+          facingRef.current = nextFacing;
+          setFacing(nextFacing);
+        }
       }
 
       animationFrameRef.current = requestAnimationFrame(tick);
@@ -352,7 +385,7 @@ const dialogueCharacters = useMemo(
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [ready, canMove, worldData, worldWidth, worldHeight, facing]);
+  }, [ready, canMove, worldData, worldWidth, worldHeight]);
 
   useEffect(() => {
     if (!ready || !sceneConfig.leaderNpcId || !leaderGoalId) return undefined;
@@ -434,7 +467,9 @@ const dialogueCharacters = useMemo(
     const nearbyObject = getNearbyObject({
       playerPos,
       playerSize: PLAYER_SIZE,
-      objects: worldData?.objects || [],
+      objects: (worldData?.objects || []).filter(
+        (obj) => !(obj.type === 'chest' && openedChests.includes(obj.id))
+      ),
     });
 
     setInteractionTarget(nearbyObject || nearbyNpc || null);
@@ -477,7 +512,7 @@ Animated.sequence([
     if (touchedExit && !currentNode) {
       onChangeScene?.(touchedExit.targetScene);
     }
-  }, [playerPos, currentNode, npcPositions, worldData, worldWidth, worldHeight, viewportWidth, viewportHeight, onChangeScene]);
+  }, [playerPos, currentNode, npcPositions, openedChests, worldData, worldWidth, worldHeight, viewportWidth, viewportHeight, onChangeScene]);
 
   useEffect(() => {
     if (!activeNode) return undefined;
@@ -535,6 +570,26 @@ Animated.sequence([
       setLeaderState({ active: true, finished: false });
     }
 
+    if (activeNode.openChest) {
+      setOpenedChests((prev) =>
+        prev.includes(activeNode.openChest) ? prev : [...prev, activeNode.openChest]
+      );
+    }
+
+    if (activeNode.throwKey) {
+      setIsThrowingKey(true);
+      throwAnim.setValue(0);
+      Animated.timing(throwAnim, {
+        toValue: 1,
+        duration: 900,
+        useNativeDriver: false,
+      }).start(() => {
+        setIsThrowingKey(false);
+        setCurrentNode(null);
+        setTimeout(() => onChangeScene?.('scene5'), 200);
+      });
+    }
+
     if (activeNode.autoAdvance && activeNode.next && !activeNode.nextLeaderGoal) {
       autoAdvanceTimeout.current = setTimeout(() => {
         handleSelect(activeNode.next);
@@ -560,7 +615,7 @@ Animated.sequence([
         shakeAnim.setValue(0);
       }
     };
-  }, [activeNode, shakeAnim]);
+  }, [activeNode, shakeAnim, throwAnim, onChangeScene]);
 
   useEffect(() => {
     if (!ready || !profileId) return undefined;
@@ -578,11 +633,17 @@ Animated.sequence([
         setClaimedRewards(updatedClaimedRewards);
       }
 
+      if (activeNode?.claimItem && !claimedRewards.includes(activeNode.claimItem)) {
+        updatedClaimedRewards = [...updatedClaimedRewards, activeNode.claimItem];
+        setClaimedRewards(updatedClaimedRewards);
+      }
+
       await saveGameForProfile(profileId, {
         sceneId: normalizedSceneId,
         currentNode,
         history,
         claimedRewards: updatedClaimedRewards,
+        openedChests,
         playerPos,
         npcPositions,
         leaderState,
@@ -594,7 +655,7 @@ Animated.sequence([
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [ready, profileId, normalizedSceneId, currentNode, activeNode, history, claimedRewards, playerPos, npcPositions, leaderState]);
+  }, [ready, profileId, normalizedSceneId, currentNode, activeNode, history, claimedRewards, openedChests, playerPos, npcPositions, leaderState]);
 
   const handleSelect = async (nextNodeID, choiceLabel = null, cost = 0) => {
     if (!nextNodeID) {
@@ -726,47 +787,61 @@ Animated.sequence([
           ))}
 
 {(worldData.objects || [])
-  .filter((item) => 
-    item.visible !== false && 
-    !claimedRewards.includes(item.id) // ⚙️ This line makes the gear disappear when collected
-  )
-  .map((item) => (
-    <View
-      key={item.id}
-      style={[
-        styles.objectVisual,
-        {
-          left: item.x,
-          top: item.y,
-          width: item.width,
-          height: item.height,
-          backgroundColor: (item.image || item.animationKey) ? 'transparent' : worldThemeStyle.object,
-        },
-      ]}
-    >
-            {item.animationKey && ANIMATED_OBJECT_MAP?.[item.animationKey] ? (
-              <AnimatedSprite
-                source={ANIMATED_OBJECT_MAP[item.animationKey].source}
-                totalFrames={ANIMATED_OBJECT_MAP[item.animationKey].totalFrames}
-                firstFrame={ANIMATED_OBJECT_MAP[item.animationKey].firstFrame}
-                lastFrame={ANIMATED_OBJECT_MAP[item.animationKey].lastFrame}
-                speedMs={ANIMATED_OBJECT_MAP[item.animationKey].speedMs}
-                displayWidth={item.width}
-                displayHeight={item.height}
-              />
-            ) : item.image ? (
-              <Image
-                source={OBJECT_IMAGE_MAP[item.image]}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="contain"
-              />
-            ) : (
-              <Text style={[styles.objectLabel, { color: worldThemeStyle.objectAccent }]}>
-                {item.label || item.id}
-              </Text>
-            )}
-          </View>
-        ))}
+  .filter((item) => {
+    if (item.visible === false) return false;
+    if (claimedRewards.includes(item.id)) return false;
+    if (item.type === 'chestKey' && !openedChests.includes(item.chestId)) return false;
+    return true;
+  })
+  .map((item) => {
+    const animKey =
+      item.type === 'chest' && openedChests.includes(item.id)
+        ? item.openAnimationKey
+        : item.animationKey;
+    const animEntry = animKey ? ANIMATED_OBJECT_MAP?.[animKey] : null;
+    return (
+      <View
+        key={item.id}
+        style={[
+          styles.objectVisual,
+          {
+            left: item.x,
+            top: item.y,
+            width: item.width,
+            height: item.height,
+            backgroundColor: (item.image || animKey) ? 'transparent' : worldThemeStyle.object,
+          borderWidth: (item.image || animKey) ? 0 : 2,
+          borderRadius: (item.image || animKey) ? 0 : 18,
+          overflow: 'hidden',
+          },
+        ]}
+      >
+        {animEntry ? (
+          <AnimatedSprite
+            source={animEntry.source}
+            totalFrames={animEntry.totalFrames}
+            rowCount={animEntry.rowCount}
+            row={animEntry.row}
+            firstFrame={animEntry.firstFrame}
+            lastFrame={animEntry.lastFrame}
+            speedMs={animEntry.speedMs}
+            displayWidth={item.width}
+            displayHeight={item.height}
+          />
+        ) : item.image ? (
+          <Image
+            source={OBJECT_IMAGE_MAP[item.image]}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="contain"
+          />
+        ) : (
+          <Text style={[styles.objectLabel, { color: worldThemeStyle.objectAccent }]}>
+            {item.label || item.id}
+          </Text>
+        )}
+      </View>
+    );
+  })}
 
         {npcViews.map((npc) => {
           const npcState =
@@ -866,40 +941,45 @@ Animated.sequence([
               {
                 borderColor: sceneConfig.palette.cardBorder,
                 backgroundColor: 'rgba(10, 8, 19, 0.84)',
+                maxHeight: screenHeight * 0.9,
               },
             ]}
           >
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* hint */}
+              <Text style={[styles.vnHintLabel, { color: sceneConfig.palette.accent }]}>
+                {sceneConfig.hint}
+              </Text>
 
-            {/* hint */}
-            <Text style={[styles.vnHintLabel, { color: sceneConfig.palette.accent }]}>
-              {sceneConfig.hint}
-            </Text>
-
-            {/* dialog */}
-            <DialogBox
-              variant="vn"
-              showPortrait={activeNode?.character !== 'system'}
-              characterId={activeNode?.character || 'system'}
-              characterData={dialogueCharacters}
-              txt={activeNode ? activeNode.txt : ''}
-              portraitOverride={speakerPortrait}
-              continueHint={activeNode && !activeNode.autoAdvance ? 'Tap to advance' : null}
-              onPress={
-                activeNode && !activeNode.choices && !activeNode.autoAdvance && activeNode.next
-                  ? () => handleSelect(activeNode.next)
-                  : null
-              }
-            />
-
-            {/* choices go here */}
-            {activeNode?.choices ? (
-              <PlayerChoice
+              {/* dialog */}
+              <DialogBox
                 variant="vn"
-                choices={activeNode.choices}
-                onSelect={(id, label, cost) => handleSelect(id, label, cost)}
+                showPortrait={activeNode?.character !== 'system'}
+                characterId={activeNode?.character || 'system'}
+                characterData={dialogueCharacters}
+                txt={activeNode ? activeNode.txt : ''}
+                portraitOverride={speakerPortrait}
+                continueHint={null}
+                onPress={
+                  activeNode && !activeNode.choices && !activeNode.autoAdvance && activeNode.next
+                    ? () => handleSelect(activeNode.next)
+                    : null
+                }
               />
-            ) : null}
 
+              {/* choices go here */}
+              {activeNode?.choices ? (
+                <PlayerChoice
+                  variant="vn"
+                  choices={activeNode.choices}
+                  onSelect={(id, label, cost) => handleSelect(id, label, cost)}
+                />
+              ) : null}
+            </ScrollView>
           </View>
         </Animated.View>
 
@@ -957,7 +1037,7 @@ Animated.sequence([
           </TouchableOpacity>
         ) : null}
 
-        {activeNode ? (
+        {activeNode && activeNode.txt ? (
           <View style={styles.gameplayDialogueWrap}>
             {activeNode?.choices ? (
               <PlayerChoice
@@ -972,7 +1052,7 @@ Animated.sequence([
               showPortrait={activeNode?.character !== 'system'}
               characterId={activeNode?.character || 'system'}
               characterData={dialogueCharacters}
-              txt={activeNode ? activeNode.txt : ''}
+              txt={activeNode.txt}
               portraitOverride={speakerPortrait}
               continueHint={activeNode && !activeNode.autoAdvance ? 'Tap to continue' : null}
               onPress={
@@ -983,6 +1063,27 @@ Animated.sequence([
             />
           </View>
         ) : null}
+
+        {isThrowingKey && (() => {
+          const fromX = playerPos.x - cameraPos.x;
+          const fromY = playerPos.y - cameraPos.y;
+          const toX = keyThrowTargetRef.current.x - cameraPos.x;
+          const toY = keyThrowTargetRef.current.y - cameraPos.y;
+          return (
+            <Animated.Image
+              source={OBJECT_IMAGE_MAP['KeyPurple.png']}
+              style={{
+                position: 'absolute',
+                zIndex: 200,
+                width: 44,
+                height: 44,
+                left: throwAnim.interpolate({ inputRange: [0, 1], outputRange: [fromX, toX] }),
+                top: throwAnim.interpolate({ inputRange: [0, 1], outputRange: [fromY, toY] }),
+              }}
+              resizeMode="contain"
+            />
+          );
+        })()}
       </Animated.View>
 
       {flashVisible && <View pointerEvents="none" style={styles.flashOverlay} />}
@@ -1022,7 +1123,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingTop: 18,
     paddingBottom: 16,
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   vnDialoguePanel: {
     marginTop: 14,
