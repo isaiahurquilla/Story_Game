@@ -5,6 +5,8 @@ export const NPC_PORTRAIT_MAP = {
   dude_image: require('../assets/sprites/Dude_Monster/Dude_Monster.png'),
   pink_image: require('../assets/sprites/Pink_Monster/Pink_Monster.png'),
   owlet_image: require('../assets/sprites/Owlet_Monster/Owlet_Monster.png'),
+  mechanic_image: require('../assets/sprites/Mechanic.png'),
+  Mechanic: require('../assets/sprites/Mechanic.png'),
 };
 
 export const OBJECT_IMAGE_MAP = {
@@ -14,15 +16,34 @@ export const OBJECT_IMAGE_MAP = {
   'Building 05.png': require('../assets/images/Building 05.png'),
   'Building 06.png': require('../assets/images/Building 06.png'),
   'Building 07.png': require('../assets/images/Building 07.png'),
+  'KeyPurple.png': require('../assets/sprites/Gear/KeyPurple.png'),
 };
 
 // Add ship_burn entry here once src/assets/sprites/Ship/ship_burn.png is saved:
 // ship_burn: { source: require('../assets/sprites/Ship/ship_burn.png'), totalFrames: 18, firstFrame: 2, lastFrame: 6, speedMs: 250 }
 export const ANIMATED_OBJECT_MAP = {
   ship_burn: { source: require('../assets/sprites/Ship/ship_burn.png'), totalFrames: 18, firstFrame: 2, lastFrame: 6, speedMs: 250 },
-  purple_gear: { 
-    source: require('../assets/sprites/Gear/purple_gear_sheet.png'), 
-    totalFrames: 8, 
-    speedMs: 120 
+  coin: {
+    source: require('../assets/sprites/Gear/Coin.png'),
+    totalFrames: 4,
+    speedMs: 120,
+  },
+  chest_closed: {
+    source: require('../assets/sprites/Gear/Chests.png'),
+    totalFrames: 2,
+    rowCount: 1,
+    row: 0,
+    firstFrame: 0,
+    lastFrame: 0,
+    speedMs: 200,
+  },
+  chest_open: {
+    source: require('../assets/sprites/Gear/Chests.png'),
+    totalFrames: 2,
+    rowCount: 1,
+    row: 0,
+    firstFrame: 1,
+    lastFrame: 1,
+    speedMs: 200,
   },
 };

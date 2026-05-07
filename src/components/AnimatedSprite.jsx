@@ -4,6 +4,8 @@ import { View, Image } from 'react-native';
 const AnimatedSprite = ({
   source,
   totalFrames,
+  rowCount = 1,
+  row = 0,
   firstFrame = 0,
   lastFrame,
   displayWidth,
@@ -24,6 +26,9 @@ const AnimatedSprite = ({
 
   const actualFrame = firstFrame + frameIndex;
 
+  const sheetWidth = totalFrames * displayWidth;
+  const sheetHeight = rowCount * displayHeight;
+
   return (
     <View style={{ width: displayWidth, height: displayHeight, overflow: 'hidden' }}>
       <Image
@@ -31,9 +36,9 @@ const AnimatedSprite = ({
         style={{
           position: 'absolute',
           left: -actualFrame * displayWidth,
-          top: 0,
-          width: totalFrames * displayWidth,
-          height: displayHeight,
+          top: -(row * displayHeight),
+          width: sheetWidth,
+          height: sheetHeight,
         }}
         resizeMode="stretch"
       />

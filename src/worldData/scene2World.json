@@ -49,7 +49,7 @@
       "y": 620,
       "width": 48,
       "height": 48,
-      "animationKey": "purple_gear",
+      "animationKey": "coin",
       "amount": 10
     },
     {
@@ -59,7 +59,7 @@
       "y": 550,
       "width": 48,
       "height": 48,
-      "animationKey": "purple_gear",
+      "animationKey": "coin",
       "amount": 10
     },
     {
@@ -69,7 +69,7 @@
       "y": 650,
       "width": 48,
       "height": 48,
-      "animationKey": "purple_gear",
+      "animationKey": "coin",
       "amount": 10
     }
   ],

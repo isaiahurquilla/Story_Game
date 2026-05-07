@@ -203,8 +203,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   vnPortrait: {
-    width: 300,
-    height: 300,
+    width: 180,
+    height: 180,
     borderColor: 'rgba(255,255,255,0.22)',
     backgroundColor: 'rgba(32,20,52,0.95)',
   },
@@ -216,15 +216,15 @@ const styles = StyleSheet.create({
   },
   vnCard: {
     borderRadius: 24,
-    paddingHorizontal: 22,
-    paddingVertical: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
     backgroundColor: 'rgba(18, 12, 30, 0.9)',
     borderColor: 'rgba(231, 218, 255, 0.16)',
   },
   vnBodyText: {
     color: '#f1e9ff',
-    fontSize: 18,
-    lineHeight: 27,
+    fontSize: 16,
+    lineHeight: 24,
   },
   vnHint: {
     color: '#d7c7ff',
