@@ -155,30 +155,28 @@ SECTION 3: ARCHITECTURAL DECISIONS (Completed as project evolves)
 SECTION 4: TEAM CONTRIBUTIONS
 ====================
 
-
 4.1 Role Assignments
-   - Nebo Paul: Project lead and base structure developer.
-   - Isaiah Urquilla: Overworld developer and scene builder.
-   - Joshua Williams: Backend management and story coordinator.
+  - Nebo Paul: Project lead and base structure developer.
+  - Isaiah Urquilla: Overworld developer and scene builder.
+  - Joshua Williams: Backend management and story coordinator.
 
 
 4.2 Contribution Summary
-   - Nebo Paul: X commits, Y pull requests, Z features.
-     Major contributions: Started visual novel components, JSON structure for characters/scenes, UI polish, managed meetings, documentation, and Trello board.
-   - Isaiah Urquilla: X commits, Y pull requests, Z features.
-     Major contributions: Created overworld scene logic, overworld dialog logic, main menu, player movement, animations, gathered assets, and story writing.
-   - Joshua Williams: X commits, Y pull requests, Z features.
-     Major contributions: Created backend connection, Async storage hook, profile logic, save/load logic, currency system, gathered assets, and story writing.
+some commits were squashed, so only stats from the last few weeks are easily accessible 
+  - Nebo Paul: 25+ commits, 12 pull requests, 6 features.
+    Major contributions: Started visual novel components, JSON structure for characters/scenes, UI polish, managed meetings, documentation, and Trello board.
+  - Isaiah Urquilla: 15+ commits, 10 pull requests, 7 features.
+    Major contributions: Created overworld scene logic, overworld dialog logic, main menu, player movement, animations, gathered assets, and story writing.
+  - Joshua Williams: 15+ commits, 3 pull requests, 6 features.
+    Major contributions: Created backend connection, Async storage hook, profile logic, save/load logic, currency system, gathered assets, and story writing.
 
 
 4.3 Code Review & Collaboration
- - How many pull requests were reviewed?
- - Any patterns in code quality or review feedback?
+- How many pull requests were reviewed?
+25
+- Any patterns in code quality or review feedback?
+Review feedback was handled over discord messages or within in person meetings. Feedback patterns were suggestions on how to improve features, and code had to be adjusted when it changed files that other people were working on.
+Self-approvals happened for minor pull requests and ones that were verified in person.
 
 
 ====================
-
-
-
-
-
