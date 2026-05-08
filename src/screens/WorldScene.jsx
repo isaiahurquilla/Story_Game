@@ -681,7 +681,6 @@ Animated.sequence([
     }
 
     if (storyMap[nextNodeID]) {
-      await addCurrency(profileId, 100);
       onChangeScene?.(nextNodeID);
       return;
     }
