@@ -16,6 +16,7 @@ const AnimatedSprite = ({
   const count = last - firstFrame + 1;
   const [frameIndex, setFrameIndex] = useState(0);
 
+  // Cycle frameIndex at speedMs intervals between firstFrame and lastFrame
   useEffect(() => {
     if (count <= 1) return undefined;
     const interval = setInterval(() => {
@@ -29,6 +30,7 @@ const AnimatedSprite = ({
   const sheetWidth = totalFrames * displayWidth;
   const sheetHeight = rowCount * displayHeight;
 
+  // Crop window over the full sheet; shift left/up to expose the active frame in the correct row
   return (
     <View style={{ width: displayWidth, height: displayHeight, overflow: 'hidden' }}>
       <Image

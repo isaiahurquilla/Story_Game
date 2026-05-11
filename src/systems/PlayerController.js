@@ -1,5 +1,7 @@
+// Constrains a value between min and max
 export const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
 
+// Converts WASD key state into a dx/dy velocity vector; normalizes diagonals to keep consistent speed
 export const getMovementVector = (keysPressed, speed) => {
   let dx = 0;
   let dy = 0;
@@ -18,6 +20,7 @@ export const getMovementVector = (keysPressed, speed) => {
   return { dx, dy };
 };
 
+// Returns 'left'|'right'|'up'|'down' from a movement vector; holds the previous direction when idle
 export const getFacingFromVector = (dx, dy, previousFacing = 'down') => {
   if (dx === 0 && dy === 0) return previousFacing;
 

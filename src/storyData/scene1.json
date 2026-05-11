@@ -3,7 +3,7 @@
     "character": "system",
     "txt": "",
     "effect": "flash",
-    "durationMs": 2000,
+    "durationMs": 500,
     "autoAdvance": true,
     "next": "start"
   },

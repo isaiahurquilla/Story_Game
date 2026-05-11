@@ -4,6 +4,7 @@ const PROFILES_KEY = '@profiles_list';
 const SAVES_KEY = '@story_saves';
 const SERVER_URL = "https://game-server-lxjk.onrender.com/sync";
 
+// Fire-and-forget POST to the Render backend; network failures are non-fatal
 const syncToCloud = async (action, collectionName, id, data = null) => {
   try {
     const response = await fetch(SERVER_URL, {
@@ -19,6 +20,7 @@ const syncToCloud = async (action, collectionName, id, data = null) => {
   }
 };
 
+// --- Profile CRUD --- all profiles stored as a JSON array under PROFILES_KEY ---
 export const loadProfiles = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem(PROFILES_KEY);
@@ -64,7 +66,7 @@ export const saveProfile = async (name) => {
   }
 };
 
-// --- 💰 NEW CURRENCY LOGIC ---
+// --- Currency CRUD — mutates the profile's currency field and re-saves ---
 
 /**
  * Adds currency and syncs to cloud
@@ -121,8 +123,7 @@ export const spendCurrency = async (profileId, amount) => {
   }
 };
 
-// --- END NEW CURRENCY LOGIC ---
-
+// --- Game save CRUD — saves keyed by profileId under a separate SAVES_KEY ---
 const loadAllSaves = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem(SAVES_KEY);
@@ -185,6 +186,7 @@ export const deleteProfile = async (id) => {
   }
 };
 
+// Dev helper: wipe all local profiles
 export const clearAllProfiles = async () => {
   try {
     await AsyncStorage.removeItem(PROFILES_KEY);

@@ -28,20 +28,24 @@ import scene1World from '../worldData/scene1World.json';
 import scene2World from '../worldData/scene2World.json';
 import scene4World from '../worldData/scene4World.json';
 import scene6World from '../worldData/scene6World.json';
+import scene8World from '../worldData/scene8World.json';
 import { getMovementVector, getFacingFromVector } from '../systems/PlayerController';
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
 import { getNearbyNpc, getNearbyObject, getTouchedExit, isNearTarget } from '../systems/InteractionSystem';
 import { SCENE_BACKGROUND_MAP } from '../constants/backgroundConfigs';
 import { PLAYER_ANIMATION_SET, SIDEKICK_ANIMATION_SET, OWLET_ANIMATION_SET, NPC_ANIMATION_MAP } from '../constants/animationSets';
-import { NPC_PORTRAIT_MAP, OBJECT_IMAGE_MAP, ANIMATED_OBJECT_MAP } from '../constants/imageMaps';
+import { NPC_PORTRAIT_MAP, OBJECT_IMAGE_MAP, ANIMATED_OBJECT_MAP, MECHANIC_CAST_FRAMES, SPELLS_EFFECT } from '../constants/imageMaps';
 import AnimatedSprite from '../components/AnimatedSprite';
+import FrameSequenceSprite from '../components/FrameSequenceSprite';
 
+// --- Game constants ---
 const PLAYER_SIZE = 64;
 const MOVE_SPEED = 4;
 const LEADER_SPEED = 2.4;
 const SAVE_DEBOUNCE_MS = 350;
 
+// Maps scene id → world layout JSON (multiple VN scenes share scene1World as a placeholder)
 const worldMap = {
   scene1: scene1World,
   scene2: scene2World,
@@ -49,9 +53,11 @@ const worldMap = {
   scene4: scene4World,
   scene5: scene1World,
   scene6: scene6World,
+  scene7: scene1World,
+  scene8: scene8World,
 };
 
-// scene config here!
+// Per-scene UI config: layout type ('vn' or 'gameplay'), start dialogue node, leader NPC, and color palette
 const sceneConfigMap = {
   scene1: {
     layout: 'vn',
@@ -78,7 +84,6 @@ const sceneConfigMap = {
     arrivalNode: null,
     topLabel: 'SCENE 2',
     title: 'Run',
-    subtitle: 'The side character takes off. Follow with WASD while the world scrolls full screen.',
     hint: 'Use W A S D to follow. Press E or tap Talk near the side character.',
     palette: {
       background: '#08131b',
@@ -96,7 +101,7 @@ const sceneConfigMap = {
     topLabel: 'SCENE 3',
     title: 'blank title',
     subtitle: 'blank subtitle',
-    hint: 'Tap the dialogue box to advance.',
+    hint: '',
     palette: {
       background: '#120c1e',
       panel: '#1d1230',
@@ -113,7 +118,7 @@ const sceneConfigMap = {
     topLabel: 'SCENE 4',
     title: 'The Clearing',
     subtitle: 'Explore the mysterious clearing and uncover its secrets.',
-    hint: 'Use W A S D to move. Press E or tap to interact with objects.',
+    hint: 'Find a way to meet the mechanic.',
     palette: {
       background: '#0a1a0f',
       panel: 'rgba(15, 25, 20, 0.76)',
@@ -124,30 +129,13 @@ const sceneConfigMap = {
       overlayTwo: 'rgba(58, 176, 94, 0.16)',
     },
   },
-  scene6: {
-    layout: 'gameplay',
-    startNode: null,
-    topLabel: 'SCENE 6',
-    title: 'The Settlement',
-    subtitle: '',
-    hint: 'Use W A S D to move. Press E to interact.',
-    palette: {
-      background: '#0a0a14',
-      panel: 'rgba(12, 10, 25, 0.82)',
-      accent: '#b086f0',
-      accentSoft: 'rgba(176, 134, 240, 0.18)',
-      cardBorder: 'rgba(200, 160, 255, 0.34)',
-      overlayOne: 'rgba(70, 40, 110, 0.18)',
-      overlayTwo: 'rgba(50, 25, 90, 0.16)',
-    },
-  },
-  scene5: {
+   scene5: {
     layout: 'vn',
     startNode: 'start',
     topLabel: 'SCENE 5',
     title: 'Inside',
     subtitle: '',
-    hint: 'Tap the dialogue box to advance.',
+    hint: '',
     palette: {
       background: '#120c1e',
       panel: '#1d1230',
@@ -158,10 +146,64 @@ const sceneConfigMap = {
       overlayTwo: 'rgba(119, 77, 255, 0.22)',
     },
   },
-};
+  scene6: {
+    layout: 'gameplay',
+    startNode: null,
+    topLabel: 'SCENE 6',
+    title: 'CryptTown',
+    subtitle: '',
+    hint: 'Press E to interact with objects and NPCs',
+    palette: {
+      background: '#08131b',
+      panel: 'rgba(10, 16, 24, 0.76)',
+      accent: '#bfefff',
+      accentSoft: 'rgba(99, 214, 255, 0.18)',
+      cardBorder: 'rgba(176, 233, 255, 0.34)',
+      overlayOne: 'rgba(72, 161, 120, 0.18)',
+      overlayTwo: 'rgba(58, 94, 176, 0.16)',
+    },
+  },
+  scene7: {
+    layout: 'vn',
+    startNode: 'start',
+    topLabel: 'SCENE 7',
+    title: 'blank title',
+    subtitle: 'blank subtitle',
+    hint: '',
+    palette: {
+      background: '#120c1e',
+      panel: '#1d1230',
+      accent: '#d3b7ff',
+      accentSoft: 'rgba(152, 105, 255, 0.18)',
+      cardBorder: 'rgba(216, 196, 255, 0.42)',
+      overlayOne: 'rgba(255, 122, 89, 0.18)',
+      overlayTwo: 'rgba(119, 77, 255, 0.22)',
+    },
+  },
+  scene8: {
+    layout: 'gameplay',
+    startNode: null,
+    leaderNpcId: 'pink',
+    leaderGoalId: 'shipGoal',
+    arrivalNode: null,
+    topLabel: 'SCENE 8',
+    title: 'Back to the Ship',
+    hint: '',
+    palette: {
+      background: '#0a1a0f',
+      panel: 'rgba(15, 25, 20, 0.76)',
+      accent: '#90ff90',
+      accentSoft: 'rgba(144, 255, 144, 0.18)',
+      cardBorder: 'rgba(176, 255, 176, 0.34)',
+      overlayOne: 'rgba(72, 161, 120, 0.18)',
+      overlayTwo: 'rgba(58, 176, 94, 0.16)',
+    },
+  },
+}
 
+// Leader NPCs start active only in scenes that open with them already moving (scene2, scene8)
 const createDefaultLeaderState = (sceneId) => ({
-  active: sceneId === 'scene2',
+  active: sceneId === 'scene2' || sceneId === 'scene8',
   finished: false,
 });
 
@@ -172,6 +214,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const sceneConfig = sceneConfigMap[normalizedSceneId] || sceneConfigMap.scene2;
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
+  // --- Scene state ---
   const [ready, setReady] = useState(false);
   const [currentNode, setCurrentNode] = useState(null);
   const [history, setHistory] = useState([]);
@@ -191,12 +234,24 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const [playerState, setPlayerState] = useState('idle');
   const [explodingCrates, setExplodingCrates] = useState([]);
   const [spawnedGear, setSpawnedGear] = useState(null);
+  const [catGif, setCatGif] = useState(null);
+  const [mechanicCasting, setMechanicCasting] = useState(false);
+  const [spellVisible, setSpellVisible] = useState(false);
+  const [shipRepaired, setShipRepaired] = useState(false);
+  const [boardingShip, setBoardingShip] = useState(false);
+  const [hiddenPlayer, setHiddenPlayer] = useState(false);
+  const [hiddenPink, setHiddenPink] = useState(false);
+  const boardingFrameRef = useRef(null);
+  const [gameEnded, setGameEnded] = useState(false);
+  const shipFlyAnim = useRef(new Animated.Value(0)).current;
 
+  // --- Refs for animation frames, timers, and WASD key state (not React state to avoid re-renders) ---
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const throwAnim = useRef(new Animated.Value(0)).current;
   const [isThrowingKey, setIsThrowingKey] = useState(false);
   const attackTimeoutRef = useRef(null);
   const crateExplodeTimeoutRef = useRef(null);
+  const mechanicCastTimeoutRef = useRef(null);
   const keyThrowTargetRef = useRef({ x: 0, y: 0 });
   const autoAdvanceTimeout = useRef(null);
   const animationFrameRef = useRef(null);
@@ -208,6 +263,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const keysPressed = useRef({ w: false, a: false, s: false, d: false });
   const facingRef = useRef('down');
 
+  // --- Derived values ---
   const worldWidth = worldData?.world?.width || 1400;
   const worldHeight = worldData?.world?.height || 900;
 
@@ -250,6 +306,7 @@ const dialogueCharacters = useMemo(
     }));
   }, [npcPositions]);
 
+  // Called on E/Enter or the on-screen button — starts a crate smash, key-throw, or dialogue based on what's nearby
   const beginNpcInteraction = useCallback(() => {
     if (!interactionTarget || currentNode || playerState === 'attack') return;
 
@@ -262,8 +319,17 @@ const dialogueCharacters = useMemo(
         setOpenedChests((prev) => [...prev, crateId]);
         crateExplodeTimeoutRef.current = setTimeout(() => {
           setClaimedRewards((prev) => [...prev, crateId]);
-          setSpawnedGear({ x: crateX, y: crateY });
-          setCurrentNode('foundGear');
+          if (crateId === 'crate_5') {
+            const GIF_SIZE = PLAYER_SIZE * 3;
+            setCatGif({
+              x: crateX + 64 - GIF_SIZE / 2,
+              y: crateY - GIF_SIZE - 16,
+            });
+            setCurrentNode('foundCat');
+          } else {
+            setSpawnedGear({ x: crateX, y: crateY });
+            setCurrentNode('foundGear');
+          }
         }, 4 * 100 + 150);
       }, 4 * 140 + 50);
       return;
@@ -285,6 +351,7 @@ const dialogueCharacters = useMemo(
     setCurrentNode(interactionTarget.interactionNode || 'start');
   }, [interactionTarget, currentNode, playerState, claimedRewards, openedChests]);
 
+  // One-time setup: load profile + saved game state, then initialize all scene state
   useEffect(() => {
     const setup = async () => {
   if (!storyData || !worldData) {
@@ -344,6 +411,7 @@ const dialogueCharacters = useMemo(
     setup();
   }, [normalizedSceneId, profileId, mode, storyData, worldData, sceneConfig.startNode]);
 
+  // Web keyboard input: WASD for movement, E/Enter to interact, Space to advance dialogue
   useEffect(() => {
     if (!ready) return undefined;
 
@@ -385,6 +453,7 @@ const dialogueCharacters = useMemo(
     return undefined;
   }, [ready, currentNode, beginNpcInteraction]);
 
+  // rAF loop: moves the player each frame from held WASD keys, applying collision and world-bounds clamping
   useEffect(() => {
     if (!ready) return undefined;
 
@@ -428,6 +497,7 @@ const dialogueCharacters = useMemo(
     };
   }, [ready, canMove, worldData, worldWidth, worldHeight]);
 
+  // rAF loop: interpolates the leader NPC toward leaderGoalId; auto-advances dialogue on arrival
   useEffect(() => {
     if (!ready || !sceneConfig.leaderNpcId || !leaderGoalId) return undefined;
     if (!leaderState.active || currentNode) return undefined;
@@ -435,18 +505,23 @@ const dialogueCharacters = useMemo(
     const goal = (worldData?.objects || []).find((item) => item.id === leaderGoalId);
     if (!goal) return undefined;
 
+    const leaderNpcIds = Array.isArray(sceneConfig.leaderNpcId)
+      ? sceneConfig.leaderNpcId
+      : [sceneConfig.leaderNpcId];
+
     const tickLeader = () => {
       let reachedGoal = false;
 
       setNpcPositions((prev) =>
         prev.map((npc) => {
-          if (npc.id !== sceneConfig.leaderNpcId) return npc;
+          if (!leaderNpcIds.includes(npc.id)) return npc;
 
           const targetX = goal.x;
           const targetY = goal.y;
           const dx = targetX - npc.x;
           const dy = targetY - npc.y;
           const distance = Math.hypot(dx, dy);
+          const nextFacing = getFacingFromVector(dx, dy, npc.facing || 'right');
 
           if (distance <= LEADER_SPEED || distance === 0) {
             reachedGoal = true;
@@ -454,6 +529,7 @@ const dialogueCharacters = useMemo(
               ...npc,
               x: targetX,
               y: targetY,
+              facing: nextFacing,
             };
           }
 
@@ -461,6 +537,7 @@ const dialogueCharacters = useMemo(
             ...npc,
             x: npc.x + (dx / distance) * LEADER_SPEED,
             y: npc.y + (dy / distance) * LEADER_SPEED,
+            facing: nextFacing,
           };
         })
       );
@@ -487,6 +564,95 @@ const dialogueCharacters = useMemo(
     };
   }, [ready, currentNode, leaderState.active, leaderGoalId, worldData, storyData, sceneConfig.leaderNpcId, sceneConfig.arrivalNode, activeNode]);
 
+  // Scene 8 ending: sets boardingShip=true once the player claims the 'board_ship' reward
+  useEffect(() => {
+    if (normalizedSceneId !== 'scene8') return;
+    if (!claimedRewards.includes('board_ship')) return;
+    if (boardingShip || hiddenPlayer || gameEnded) return;
+    setBoardingShip(true);
+  }, [claimedRewards, normalizedSceneId, boardingShip, hiddenPlayer, gameEnded]);
+
+  // Moves both the player and Pink to boardGoal, then triggers the ship-fly animation
+  useEffect(() => {
+    if (!boardingShip) return undefined;
+
+    const boardGoal = (worldData?.objects || []).find((o) => o.id === 'boardGoal');
+    if (!boardGoal) return undefined;
+
+    let playerReached = false;
+    let pinkReached = false;
+
+    const tick = () => {
+      if (!playerReached) {
+        setPlayerPos((prev) => {
+          const dx = boardGoal.x - prev.x;
+          const dy = boardGoal.y - prev.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist <= MOVE_SPEED) {
+            playerReached = true;
+            return { x: boardGoal.x, y: boardGoal.y };
+          }
+          return {
+            x: prev.x + (dx / dist) * MOVE_SPEED,
+            y: prev.y + (dy / dist) * MOVE_SPEED,
+          };
+        });
+      }
+
+      if (!pinkReached) {
+        setNpcPositions((prev) =>
+          prev.map((npc) => {
+            if (npc.id !== 'pink') return npc;
+            const dx = boardGoal.x - npc.x;
+            const dy = boardGoal.y - npc.y;
+            const dist = Math.hypot(dx, dy);
+            const nextFacing = getFacingFromVector(dx, dy, npc.facing || 'right');
+            if (dist <= LEADER_SPEED) {
+              pinkReached = true;
+              return { ...npc, x: boardGoal.x, y: boardGoal.y, facing: nextFacing };
+            }
+            return {
+              ...npc,
+              x: npc.x + (dx / dist) * LEADER_SPEED,
+              y: npc.y + (dy / dist) * LEADER_SPEED,
+              facing: nextFacing,
+            };
+          })
+        );
+      }
+
+      if (playerReached && pinkReached) {
+        setHiddenPlayer(true);
+        setHiddenPink(true);
+        setBoardingShip(false);
+        shipFlyAnim.setValue(0);
+        Animated.timing(shipFlyAnim, {
+          toValue: -1200,
+          duration: 2000,
+          useNativeDriver: true,
+        }).start(({ finished }) => {
+          if (finished) setGameEnded(true);
+        });
+        return;
+      }
+
+      boardingFrameRef.current = requestAnimationFrame(tick);
+    };
+
+    boardingFrameRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (boardingFrameRef.current) cancelAnimationFrame(boardingFrameRef.current);
+    };
+  }, [boardingShip, worldData]);
+
+  // Returns to the main menu 5 seconds after the ship-fly animation completes
+  useEffect(() => {
+    if (!gameEnded) return;
+    const t = setTimeout(() => onGoToMenu?.(), 5000);
+    return () => clearTimeout(t);
+  }, [gameEnded, onGoToMenu]);
+
+  // Runs every time playerPos changes: update camera, detect nearby NPC/object, collect currency, trigger exits
   useEffect(() => {
     setCameraPos(
       getCameraPosition({
@@ -512,6 +678,7 @@ const dialogueCharacters = useMemo(
         (obj) => {
           if (obj.type === 'chest' && openedChests.includes(obj.id)) return false;
           if (obj.showAfter && !claimedRewards.includes(obj.showAfter)) return false;
+          if (obj.showAfterAll && !obj.showAfterAll.every((id) => claimedRewards.includes(id))) return false;
           return true;
         }
       ),
@@ -559,6 +726,7 @@ Animated.sequence([
     }
   }, [playerPos, currentNode, npcPositions, openedChests, worldData, worldWidth, worldHeight, viewportWidth, viewportHeight, onChangeScene]);
 
+  // Fires when the active dialogue node changes: runs flash/shake/mechanic_cast effects, triggers leader movement, auto-advances timed nodes
   useEffect(() => {
     if (!activeNode) return undefined;
 
@@ -635,6 +803,16 @@ Animated.sequence([
       });
     }
 
+    if (activeNode.effect === 'mechanic_cast') {
+      setMechanicCasting(true);
+      setSpellVisible(true);
+      mechanicCastTimeoutRef.current = setTimeout(() => {
+        setMechanicCasting(false);
+        setSpellVisible(false);
+        setShipRepaired(true);
+      }, effectDuration);
+    }
+
     if (activeNode.autoAdvance && activeNode.next && !activeNode.nextLeaderGoal) {
       autoAdvanceTimeout.current = setTimeout(() => {
         handleSelect(activeNode.next);
@@ -667,9 +845,16 @@ Animated.sequence([
         clearTimeout(crateExplodeTimeoutRef.current);
         crateExplodeTimeoutRef.current = null;
       }
+      if (mechanicCastTimeoutRef.current) {
+        clearTimeout(mechanicCastTimeoutRef.current);
+        mechanicCastTimeoutRef.current = null;
+      }
+      setMechanicCasting(false);
+      setSpellVisible(false);
     };
   }, [activeNode, shakeAnim, throwAnim, onChangeScene]);
 
+  // Debounced auto-save: writes full game state to AsyncStorage 350ms after any trackable change
   useEffect(() => {
     if (!ready || !profileId) return undefined;
 
@@ -710,12 +895,14 @@ Animated.sequence([
     };
   }, [ready, profileId, normalizedSceneId, currentNode, activeNode, history, claimedRewards, openedChests, playerPos, npcPositions, leaderState]);
 
+  // Clear the gear drop visual once dialogue closes
   useEffect(() => {
     if (currentNode === null && spawnedGear !== null) {
       setSpawnedGear(null);
     }
   }, [currentNode, spawnedGear]);
 
+  // Advance the dialogue graph: handle currency costs, record choice history, detect scene transitions
   const handleSelect = async (nextNodeID, choiceLabel = null, cost = 0) => {
     const leavingNode = storyData?.[currentNode];
     if (leavingNode?.claimItem && !claimedRewards.includes(leavingNode.claimItem)) {
@@ -755,6 +942,7 @@ Animated.sequence([
     }
   };
 
+  // Color tokens for the procedural world renderer, derived from the world JSON's theme field
   const worldThemeStyle = useMemo(() => {
     const theme = worldData?.world?.theme;
 
@@ -783,6 +971,7 @@ Animated.sequence([
     };
   }, [worldData]);
 
+  // Renders the scrollable game world: background → colliders → objects → NPCs → player
   const renderWorld = () => (
     <View
       style={[
@@ -856,16 +1045,20 @@ Animated.sequence([
     if (claimedRewards.includes(item.id)) return false;
     if (item.type === 'chestKey' && !openedChests.includes(item.chestId)) return false;
     if (item.showAfter && !claimedRewards.includes(item.showAfter)) return false;
+    if (item.showAfterAll && !item.showAfterAll.every((id) => claimedRewards.includes(id))) return false;
     return true;
   })
   .map((item) => {
     const animKey =
+      item.id === 'ship' && shipRepaired ? 'ship_repaired' :
       item.type === 'chest' && openedChests.includes(item.id) ? item.openAnimationKey :
       item.type === 'crate' && openedChests.includes(item.id) ? 'crate_explode' :
       item.animationKey;
     const animEntry = animKey ? ANIMATED_OBJECT_MAP?.[animKey] : null;
+    const isShip = item.id === 'ship';
+    const ObjectContainer = isShip ? Animated.View : View;
     return (
-      <View
+      <ObjectContainer
         key={item.id}
         style={[
           styles.objectVisual,
@@ -875,10 +1068,11 @@ Animated.sequence([
             width: item.width,
             height: item.height,
             backgroundColor: (item.image || animKey) ? 'transparent' : worldThemeStyle.object,
-          borderWidth: (item.image || animKey) ? 0 : 2,
-          borderRadius: (item.image || animKey) ? 0 : 18,
-          overflow: 'hidden',
+            borderWidth: (item.image || animKey) ? 0 : 2,
+            borderRadius: (item.image || animKey) ? 0 : 18,
+            overflow: 'hidden',
           },
+          isShip && { transform: [{ translateY: shipFlyAnim }] },
         ]}
       >
         {animEntry ? (
@@ -904,9 +1098,24 @@ Animated.sequence([
             {item.label || item.id}
           </Text>
         )}
-      </View>
+      </ObjectContainer>
     );
   })}
+
+        {catGif && (
+          <Image
+            source={OBJECT_IMAGE_MAP['cat.gif']}
+            style={{
+              position: 'absolute',
+              left: catGif.x,
+              top: catGif.y,
+              width: PLAYER_SIZE * 3,
+              height: PLAYER_SIZE * 3,
+              zIndex: 19,
+            }}
+            resizeMode="contain"
+          />
+        )}
 
         {spawnedGear && (
           <Image
@@ -923,10 +1132,15 @@ Animated.sequence([
           />
         )}
 
-        {npcViews.map((npc) => {
+        {npcViews.filter((npc) => !(npc.id === 'pink' && hiddenPink)).map((npc) => {
+          const _leaderIds = Array.isArray(sceneConfig.leaderNpcId)
+            ? sceneConfig.leaderNpcId
+            : sceneConfig.leaderNpcId ? [sceneConfig.leaderNpcId] : [];
           const npcState =
-            !currentNode && leaderState.active && npc.id === sceneConfig.leaderNpcId
+            !currentNode && leaderState.active && _leaderIds.includes(npc.id)
               ? 'run'
+              : boardingShip && npc.id === 'pink'
+              ? 'walk'
               : 'idle';
 
           return (
@@ -940,23 +1154,51 @@ Animated.sequence([
                 },
               ]}
             >
-              <PlayerSprite
-                x={0}
-                y={0}
-                size={npc.animationSet ? 64 : 92}
-                animationSet={npc.animationSet}
-                spriteSource={npc.animationSet ? null : npc.portraitSource}
-                state={npcState}
-                facing="right"
-                zIndex={16}
-                speedMs={130}
-              />
+              {npc.id === 'Mechanic' && mechanicCasting ? (
+                <FrameSequenceSprite
+                  frames={MECHANIC_CAST_FRAMES}
+                  speedMs={100}
+                  style={{ width: 92, height: 92 }}
+                />
+              ) : (
+                <PlayerSprite
+                  x={0}
+                  y={0}
+                  size={npc.animationSet ? 64 : 92}
+                  animationSet={npc.animationSet}
+                  spriteSource={npc.animationSet ? null : npc.portraitSource}
+                  state={npcState}
+                  facing={npc.facing || 'right'}
+                  zIndex={16}
+                  speedMs={130}
+                />
+              )}
               <Text style={styles.npcLabel}>
                 {dialogueCharacters[npc.id]?.name || npc.id}
               </Text>
             </View>
           );
         })}
+
+        {spellVisible && (() => {
+          const ship = (worldData?.objects || []).find((o) => o.id === 'ship');
+          if (!ship) return null;
+          return (
+            <Image
+              key="spells-effect"
+              source={SPELLS_EFFECT}
+              style={{
+                position: 'absolute',
+                left: ship.x - cameraPos.x + ship.width / 2 - 64,
+                top: ship.y - cameraPos.y + ship.height / 2 - 64,
+                width: 128,
+                height: 128,
+                zIndex: 25,
+              }}
+              resizeMode="contain"
+            />
+          );
+        })()}
 
         {(worldData.exits || []).map((exit) => (
           <View
@@ -974,16 +1216,18 @@ Animated.sequence([
           />
         ))}
 
-        <PlayerSprite
-          x={playerPos.x}
-          y={playerPos.y}
-          size={PLAYER_SIZE}
-          animationSet={PLAYER_ANIMATION_SET}
-          state={playerState !== 'idle' ? playerState : isPlayerMoving ? 'walk' : 'idle'}
-          facing={facing}
-          zIndex={20}
-          speedMs={140}
-        />
+        {!hiddenPlayer && (
+          <PlayerSprite
+            x={playerPos.x}
+            y={playerPos.y}
+            size={PLAYER_SIZE}
+            animationSet={PLAYER_ANIMATION_SET}
+            state={boardingShip ? 'walk' : playerState !== 'idle' ? playerState : isPlayerMoving ? 'walk' : 'idle'}
+            facing={boardingShip ? 'left' : facing}
+            zIndex={20}
+            speedMs={140}
+          />
+        )}
       </View>
     </View>
   );
@@ -1001,6 +1245,7 @@ Animated.sequence([
     interactionTarget?.type === 'object' ? 'Inspect' :
     'Talk';
 
+  // --- VN layout: full-screen background with a scrollable dialogue/choice panel ---
   if (sceneConfig.layout === 'vn') {
     return (
       <View style={[styles.root, { backgroundColor: sceneConfig.palette.background }]}>
@@ -1072,6 +1317,7 @@ Animated.sequence([
     );
   }
 
+  // --- Gameplay layout: world viewport + HUD overlay + dialogue popup at the bottom ---
   return (
     <View style={[styles.root, { backgroundColor: sceneConfig.palette.background }]}>
       <Animated.View style={[styles.gameplayContainer, { transform: [{ translateX: shakeAnim }] }]}>
@@ -1107,7 +1353,7 @@ Animated.sequence([
         {!activeNode ? (
           <View style={styles.gameplayBottomOverlay}>
             <InteractPrompt
-              visible={!!interactionTarget}
+              visible={!!interactionTarget && interactionTarget.type !== 'crate'}
               text={`Press E or tap ${interactButtonLabel} to ${
                 interactionTarget?.type === 'object' ? 'examine' : 'speak with'
               } ${speakerLabel}.`}
@@ -1115,13 +1361,14 @@ Animated.sequence([
           </View>
         ) : null}
 
-        {!activeNode && interactionTarget ? (
+        {!activeNode && interactionTarget &&
+          !(interactionTarget.type === 'crate' && (openedChests.includes(interactionTarget.id) || claimedRewards.includes(interactionTarget.id))) ? (
           <TouchableOpacity style={styles.interactButton} onPress={beginNpcInteraction}>
             <Text style={styles.interactButtonText}>{interactButtonLabel}</Text>
           </TouchableOpacity>
         ) : null}
 
-        {activeNode && activeNode.txt ? (
+        {activeNode && (activeNode.txt || activeNode.choices) ? (
           <View style={styles.gameplayDialogueWrap}>
             {activeNode?.choices ? (
               <PlayerChoice
@@ -1171,6 +1418,12 @@ Animated.sequence([
       </Animated.View>
 
       {flashVisible && <View pointerEvents="none" style={styles.flashOverlay} />}
+
+      {gameEnded && (
+        <View style={styles.gameEndOverlay}>
+          <Text style={styles.gameEndText}>THE END</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -1178,6 +1431,23 @@ Animated.sequence([
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  gameEndOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.88)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  gameEndText: {
+    color: '#ffffff',
+    fontSize: 52,
+    fontWeight: '800',
+    letterSpacing: 10,
   },
   topMenuButton: {
     position: 'absolute',

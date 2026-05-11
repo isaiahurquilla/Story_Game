@@ -28,6 +28,7 @@ export default function Menu() {
   const [loading, setLoading] = useState(true);
   const [sceneModalVisible, setSceneModalVisible] = useState(false);
 
+  // Load profile + any existing save when the menu mounts
   useEffect(() => {
     const loadMenuData = async () => {
       if (!selectedProfileId) {
@@ -46,6 +47,7 @@ export default function Menu() {
     loadMenuData();
   }, [selectedProfileId]);
 
+  // Wipe save data and start fresh from scene1
   const handleNewGame = async () => {
     if (!selectedProfileId) return;
 
@@ -57,6 +59,7 @@ export default function Menu() {
     });
   };
 
+  // Jump directly to a specific chapter (bypasses existing save data)
   const handleLoadScene = async (sceneKey) => {
     if (!selectedProfileId) return;
 
@@ -69,6 +72,7 @@ export default function Menu() {
     });
   };
 
+  // Resume from the last saved scene and dialogue node
   const handleLoadGame = () => {
     if (!selectedProfileId || !saveData) return;
 

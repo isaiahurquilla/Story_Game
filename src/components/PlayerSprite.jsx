@@ -24,10 +24,12 @@ const PlayerSprite = ({
 
   const [frameIndex, setFrameIndex] = useState(0);
 
+  // Reset to frame 0 when the animation state changes to avoid mid-sheet glitch
   useEffect(() => {
     setFrameIndex(0);
   }, [state, activeSheet]);
 
+  // Advance frame index at speedMs intervals while the animation is playing
   useEffect(() => {
     if (!activeSheet || frameCount <= 1) return;
 
@@ -38,6 +40,7 @@ const PlayerSprite = ({
     return () => clearInterval(interval);
   }, [activeSheet, frameCount, speedMs]);
 
+  // scaleX: -1 flips the sprite when facing left
   const containerStyle = useMemo(
     () => [
       styles.crop,

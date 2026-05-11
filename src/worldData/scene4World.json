@@ -75,6 +75,56 @@
       "y": 490,
       "width": 60,
       "height": 40
+    },
+    {
+      "id": "gear_1",
+      "type": "currency",
+      "x": 350,
+      "y": 700,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_2",
+      "type": "currency",
+      "x": 650,
+      "y": 720,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_3",
+      "type": "currency",
+      "x": 860,
+      "y": 680,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_4",
+      "type": "currency",
+      "x": 1240,
+      "y": 750,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_5",
+      "type": "currency",
+      "x": 1900,
+      "y": 740,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
     }
   ],
   "colliders": [

@@ -49,8 +49,8 @@
   },
   "anyway3": {
     "character": "Mechanic",
-    "txt": "You might find what you need in CryptTown, but I'd be careful if I were you. The place is crawling with devils.",
-    "next": "end"
+    "txt": "You might find what you need in CryptTown, but I'd be careful if I were you. Last I heard, there was a flying devil loose in there.",
+    "next": "scene6"
     }
 }
 

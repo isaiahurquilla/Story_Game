@@ -8,6 +8,7 @@ import Animated, {
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
+// Portrait images available inside the dialogue box (subset of NPC_PORTRAIT_MAP)
 const imageMap = {
   //fox_image: require('../assets/images/fox.png'),
   //wolf_image: require('../assets/images/wolf.png'),
@@ -43,6 +44,7 @@ const DialogBox = ({
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Three visual themes: 'default' (profile screen), 'vn' (visual novel panel), 'overlay' (gameplay HUD)
   const variantStyles = {
     default: {
       wrap: styles.defaultWrap,
@@ -74,6 +76,7 @@ const DialogBox = ({
   const portraitSource = portraitOverride || imageMap[speaker.portrait];
   const hintLabel = continueHint ?? (onPress ? 'Tap to continue' : null);
 
+  // Fade in and reset the typewriter whenever the text prop changes
   useEffect(() => {
     opacity.value = 0;
     opacity.value = withTiming(1, { duration: 250 });
@@ -81,6 +84,7 @@ const DialogBox = ({
     setCurrentIndex(0);
   }, [txt, opacity]);
 
+  // Typewriter effect: reveal one character per tick at the given speed
   useEffect(() => {
     if (!txt || currentIndex >= txt.length) return undefined;
 
@@ -92,6 +96,7 @@ const DialogBox = ({
     return () => clearTimeout(timeout);
   }, [currentIndex, txt, speed]);
 
+  // First tap completes the typewriter instantly; second tap calls onPress to advance the node
   const handlePress = () => {
     if (currentIndex < txt.length) {
       setDisplayedText(txt);

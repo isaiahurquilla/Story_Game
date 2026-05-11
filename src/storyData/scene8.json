@@ -1,0 +1,84 @@
+{
+
+  "pinkStart": {
+    "character": "pink",
+    "txt": "WOOHOO! Finally getting out of this crazy planet!",
+    "next": "end"
+  },
+  "start": {
+    "character": "Mechanic",
+    "txt": "This looks pretty bad. Good thing you found me, anyone else would have blown you up trying to fix this.",
+    "next": "playerstart"
+  },
+  "playerstart": {
+    "character": "player",
+    "choices": [
+      { "label": "Sarcasm", "next": "sarcasm" },
+      { "label": "Thank Him", "next": "gratitude" }
+    ]
+  },
+  "sarcasm": {
+    "character": "player",
+    "txt": "Yes, Yes, You're amazing. Now can you please fix my ship?",
+    "next": "Mechanic_response1"
+  },
+  "gratitude": {
+    "character": "player",
+    "txt": "Thank you so much for helping us out, we really appreciate it.",
+    "next": "Mechanic_response2"
+  },
+  "Mechanic_response1": {
+    "character": "Mechanic",
+    "txt": "Damn right I am, now stand back before your ship blows up again.",
+    "next": "Ship_spell"
+  },
+  "Mechanic_response2": {
+    "character": "Mechanic",
+    "txt": "Take your thanks somewhere else, I just want to go back to my house and sleep.",
+    "next": "Ship_spell"
+  },
+  "Ship_spell": {
+    "character": "system",
+    "txt": "",
+    "effect": "mechanic_cast",
+    "durationMs": 3000,
+    "autoAdvance": true,
+    "next": "player_response"
+  },
+  "player_response": {
+    "character": "player",
+    "txt": "Thank you so much, How can I ever repay you?",
+    "next": "Mechanic_1"
+  },
+  "Mechanic_1": {
+    "character": "Mechanic",
+    "txt": "You can pay me back by getting out of my hair. I'm already annoyed enough as is.",
+    "next": "question"
+  },
+  "question": {
+    "character": "player",
+    "txt": "What happened?",
+    "next": "Mechanic2"
+  },
+  "Mechanic2": {
+    "character": "Mechanic",
+    "txt": "Turns out the 'devil' I was hiding from was just a pet that got loose.",
+    "next": "player_response2"
+  },
+  "Mechanic3": {
+    "character": "Mechanic",
+    "txt": "I think most people went to go look for him, but they're crazy. There's no way that huge spinning thing in the sky is just some pet.",
+    "next": "player_response2"
+  },
+  "player_response2": {
+    "character": "player",
+    "txt": "I suggest staying away from CryptTown then... ",
+    "next": "anyways"
+  },
+  "anyways": {
+    "character": "player",
+    "txt": "Anyways, thanks again for fixing my ship. I should get going now.",
+    "claimItem": "board_ship",
+    "next": "end"
+   }
+}
