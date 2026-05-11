@@ -1,5 +1,5 @@
 PROJECT PROPOSAL & DEVELOPMENT PROCESS DOCUMENT
-Team Name: [Team Dreamland]
+Team Name: [The Dream Team]
 Team Members: Isaiah Urquilla, Nebo Paul, Joshua Williams
 Project Name: [ Dreamland ]
 Category: Entertainment & Gaming
