@@ -2,12 +2,14 @@ export const PLAYER_ANIMATION_SET = {
   idle: require('../assets/sprites/Dude_Monster/Dude_Monster_Idle_4.png'),
   walk: require('../assets/sprites/Dude_Monster/Dude_Monster_Walk_6.png'),
   run: require('../assets/sprites/Dude_Monster/Dude_Monster_Run_6.png'),
+  attack: require('../assets/sprites/Dude_Monster/Dude_Monster_Attack1_4.png'),
   frameWidth: 32,
   frameHeight: 32,
   frameCounts: {
     idle: 4,
     walk: 6,
     run: 6,
+    attack: 4,
   },
 };
 

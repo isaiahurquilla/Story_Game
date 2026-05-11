@@ -1,0 +1,84 @@
+{
+  "pinkStart": {
+    "character": "pink",
+    "txt": "Are you sure this is where we can find the parts we need?",
+    "next": "pink2"
+  },
+  "pink2": {
+    "character": "pink",
+    "txt": "It's really creepy here, let's get in and out as fast as we can.",
+    "next": "end"
+  },
+  "wraith01Start": {
+    "character": "wraith_01",
+    "txt": "Strangers... you shouldn't be wandering here. It's not safe here anymore.",
+    "next": "wraith01_2"
+  },
+  "wraith01_2": {
+    "character": "wraith_01",
+    "txt": "Those devils came here and ruined our lively town.",
+    "choices": [
+      { "label": "Is that why it looks so dreary and dark here?", "next": "wraith01_question" },
+      { "label": "We're looking for engine parts.", "next": "wraith01_parts" }
+    ]
+  },
+  "wraith01_question": {
+    "character": "wraith_01",
+    "txt": "No... it's always looked like this. It's called CryptTown for a reason.",
+    "next": "player_Q1"
+  },
+  "player_Q1": {
+    "character": "player",
+    "txt": "I see. Anyways, do you think you could help us out? We're looking for engine parts.",
+    "next": "wraith01_question2"
+  },
+  "wraith01_question2": {
+    "character": "wraith_01",
+    "txt": "You're gonna want to talk to the elder wraith on the other side of town. He's the only one who knows where anything is.",
+    "next": "end"
+  },
+  "wraith01_parts": {
+    "character": "wraith_01",
+    "txt": "Parts? You'd want to speak with the elder on the other side of town.",
+    "next": "wraith01_end"
+  },
+  "wraith01_end": {
+    "character": "wraith_01",
+    "txt": "Whatever you're here for, don't stay too long after dark.",
+    "next": "end"
+  },
+  "wraith03Start": {
+    "character": "wraith_03",
+    "txt": "You've come from the woods, I can tell.",
+    "next": "wraith03_2"
+  },
+  "wraith03_2": {
+    "character": "wraith_03",
+    "txt": "Did the mechanic send you? I told him to lock up his chest too but I guess he didn't listen.",
+    "choices": [
+      { "label": "Yes, they sent us to find parts.", "next": "wraith03_parts" },
+      { "label": "We're just trying to get home.", "next": "wraith03_home" }
+    ]
+  },
+  "wraith03_parts": {
+    "character": "wraith_03",
+    "txt": "I thought so. There are a few supply crates left in town. The devils left those at least. Help yourself to them.",
+    "next": "wraith03_end"
+  },
+  "wraith03_home": {
+    "character": "wraith_03",
+    "txt": "Then finding those parts is your best hope. The mechanic is the only one who can fix a ship around here. Check the crates around town, you might find what you need.",
+    "next": "wraith03_end"
+  },
+  "wraith03_end": {
+    "claimItem": "wraith03_talked",
+    "character": "wraith_03",
+    "txt": "Just be careful, the devils are still around here and they don't like visitors.",
+    "next": "end"
+  },
+  "foundGear": {
+    "character": "player",
+    "txt": "Found one!",
+    "next": "end"
+  }
+}
