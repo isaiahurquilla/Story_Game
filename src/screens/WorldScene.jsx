@@ -27,6 +27,7 @@ import storyMap from '../constants/storyMap';
 import scene1World from '../worldData/scene1World.json';
 import scene2World from '../worldData/scene2World.json';
 import scene4World from '../worldData/scene4World.json';
+import scene6World from '../worldData/scene6World.json';
 import { getMovementVector, getFacingFromVector } from '../systems/PlayerController';
 import { getCameraPosition } from '../systems/CameraController';
 import { applyCollision } from '../systems/CollisionSystem';
@@ -47,6 +48,7 @@ const worldMap = {
   scene3: scene1World,
   scene4: scene4World,
   scene5: scene1World,
+  scene6: scene6World,
 };
 
 // scene config here!
@@ -122,6 +124,23 @@ const sceneConfigMap = {
       overlayTwo: 'rgba(58, 176, 94, 0.16)',
     },
   },
+  scene6: {
+    layout: 'gameplay',
+    startNode: null,
+    topLabel: 'SCENE 6',
+    title: 'The Settlement',
+    subtitle: '',
+    hint: 'Use W A S D to move. Press E to interact.',
+    palette: {
+      background: '#0a0a14',
+      panel: 'rgba(12, 10, 25, 0.82)',
+      accent: '#b086f0',
+      accentSoft: 'rgba(176, 134, 240, 0.18)',
+      cardBorder: 'rgba(200, 160, 255, 0.34)',
+      overlayOne: 'rgba(70, 40, 110, 0.18)',
+      overlayTwo: 'rgba(50, 25, 90, 0.16)',
+    },
+  },
   scene5: {
     layout: 'vn',
     startNode: 'start',
@@ -169,9 +188,15 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const [profileName, setProfileName] = useState('Player');
   const [currentCurrency, setCurrentCurrency] = useState(0);
 
+  const [playerState, setPlayerState] = useState('idle');
+  const [explodingCrates, setExplodingCrates] = useState([]);
+  const [spawnedGear, setSpawnedGear] = useState(null);
+
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const throwAnim = useRef(new Animated.Value(0)).current;
   const [isThrowingKey, setIsThrowingKey] = useState(false);
+  const attackTimeoutRef = useRef(null);
+  const crateExplodeTimeoutRef = useRef(null);
   const keyThrowTargetRef = useRef({ x: 0, y: 0 });
   const autoAdvanceTimeout = useRef(null);
   const animationFrameRef = useRef(null);
@@ -190,7 +215,7 @@ const WorldScene = ({ sceneId, profileId, mode, onGoToMenu, onChangeScene }) => 
   const viewportHeight = sceneConfig.layout === 'vn' ? Math.min(screenHeight * 0.34, 320) : screenHeight;
 
   const activeNode = currentNode ? storyData?.[currentNode] : null;
-  const canMove = ready && sceneConfig.layout !== 'vn' && !currentNode;
+  const canMove = ready && sceneConfig.layout !== 'vn' && !currentNode && playerState === 'idle';
 
   const isPlayerMoving =
     canMove &&
@@ -220,13 +245,29 @@ const dialogueCharacters = useMemo(
   const npcViews = useMemo(() => {
     return npcPositions.map((npc) => ({
       ...npc,
-      animationSet: NPC_ANIMATION_MAP[npc.id] || SIDEKICK_ANIMATION_SET,
+      animationSet: NPC_ANIMATION_MAP[npc.id] || null,
       portraitSource: NPC_PORTRAIT_MAP[npc.id] || null,
     }));
   }, [npcPositions]);
 
   const beginNpcInteraction = useCallback(() => {
-    if (!interactionTarget || currentNode) return;
+    if (!interactionTarget || currentNode || playerState === 'attack') return;
+
+    if (interactionTarget.type === 'crate') {
+      if (openedChests.includes(interactionTarget.id) || claimedRewards.includes(interactionTarget.id)) return;
+      const { id: crateId, x: crateX, y: crateY } = interactionTarget;
+      setPlayerState('attack');
+      attackTimeoutRef.current = setTimeout(() => {
+        setPlayerState('idle');
+        setOpenedChests((prev) => [...prev, crateId]);
+        crateExplodeTimeoutRef.current = setTimeout(() => {
+          setClaimedRewards((prev) => [...prev, crateId]);
+          setSpawnedGear({ x: crateX, y: crateY });
+          setCurrentNode('foundGear');
+        }, 4 * 100 + 150);
+      }, 4 * 140 + 50);
+      return;
+    }
 
     if (
       interactionTarget.requiredItem &&
@@ -242,7 +283,7 @@ const dialogueCharacters = useMemo(
     }
 
     setCurrentNode(interactionTarget.interactionNode || 'start');
-  }, [interactionTarget, currentNode, claimedRewards]);
+  }, [interactionTarget, currentNode, playerState, claimedRewards, openedChests]);
 
   useEffect(() => {
     const setup = async () => {
@@ -468,7 +509,11 @@ const dialogueCharacters = useMemo(
       playerPos,
       playerSize: PLAYER_SIZE,
       objects: (worldData?.objects || []).filter(
-        (obj) => !(obj.type === 'chest' && openedChests.includes(obj.id))
+        (obj) => {
+          if (obj.type === 'chest' && openedChests.includes(obj.id)) return false;
+          if (obj.showAfter && !claimedRewards.includes(obj.showAfter)) return false;
+          return true;
+        }
       ),
     });
 
@@ -614,6 +659,14 @@ Animated.sequence([
         shakeLoopRef.current = null;
         shakeAnim.setValue(0);
       }
+      if (attackTimeoutRef.current) {
+        clearTimeout(attackTimeoutRef.current);
+        attackTimeoutRef.current = null;
+      }
+      if (crateExplodeTimeoutRef.current) {
+        clearTimeout(crateExplodeTimeoutRef.current);
+        crateExplodeTimeoutRef.current = null;
+      }
     };
   }, [activeNode, shakeAnim, throwAnim, onChangeScene]);
 
@@ -657,7 +710,18 @@ Animated.sequence([
     };
   }, [ready, profileId, normalizedSceneId, currentNode, activeNode, history, claimedRewards, openedChests, playerPos, npcPositions, leaderState]);
 
+  useEffect(() => {
+    if (currentNode === null && spawnedGear !== null) {
+      setSpawnedGear(null);
+    }
+  }, [currentNode, spawnedGear]);
+
   const handleSelect = async (nextNodeID, choiceLabel = null, cost = 0) => {
+    const leavingNode = storyData?.[currentNode];
+    if (leavingNode?.claimItem && !claimedRewards.includes(leavingNode.claimItem)) {
+      setClaimedRewards((prev) => [...prev, leavingNode.claimItem]);
+    }
+
     if (!nextNodeID) {
       setCurrentNode(null);
       return;
@@ -791,13 +855,14 @@ Animated.sequence([
     if (item.visible === false) return false;
     if (claimedRewards.includes(item.id)) return false;
     if (item.type === 'chestKey' && !openedChests.includes(item.chestId)) return false;
+    if (item.showAfter && !claimedRewards.includes(item.showAfter)) return false;
     return true;
   })
   .map((item) => {
     const animKey =
-      item.type === 'chest' && openedChests.includes(item.id)
-        ? item.openAnimationKey
-        : item.animationKey;
+      item.type === 'chest' && openedChests.includes(item.id) ? item.openAnimationKey :
+      item.type === 'crate' && openedChests.includes(item.id) ? 'crate_explode' :
+      item.animationKey;
     const animEntry = animKey ? ANIMATED_OBJECT_MAP?.[animKey] : null;
     return (
       <View
@@ -843,6 +908,21 @@ Animated.sequence([
     );
   })}
 
+        {spawnedGear && (
+          <Image
+            source={OBJECT_IMAGE_MAP['purple_gear_sheet.png']}
+            style={{
+              position: 'absolute',
+              left: spawnedGear.x - 8,
+              top: spawnedGear.y - 32,
+              width: 80,
+              height: 80,
+              zIndex: 18,
+            }}
+            resizeMode="contain"
+          />
+        )}
+
         {npcViews.map((npc) => {
           const npcState =
             !currentNode && leaderState.active && npc.id === sceneConfig.leaderNpcId
@@ -863,8 +943,9 @@ Animated.sequence([
               <PlayerSprite
                 x={0}
                 y={0}
-                size={64}
+                size={npc.animationSet ? 64 : 92}
                 animationSet={npc.animationSet}
+                spriteSource={npc.animationSet ? null : npc.portraitSource}
                 state={npcState}
                 facing="right"
                 zIndex={16}
@@ -898,7 +979,7 @@ Animated.sequence([
           y={playerPos.y}
           size={PLAYER_SIZE}
           animationSet={PLAYER_ANIMATION_SET}
-          state={isPlayerMoving ? 'walk' : 'idle'}
+          state={playerState !== 'idle' ? playerState : isPlayerMoving ? 'walk' : 'idle'}
           facing={facing}
           zIndex={20}
           speedMs={140}
@@ -915,7 +996,10 @@ Animated.sequence([
     ? interactionTarget.label || dialogueCharacters[interactionTarget.id]?.name || interactionTarget.id
     : 'someone';
 
-  const interactButtonLabel = interactionTarget?.type === 'object' ? 'Inspect' : 'Talk';
+  const interactButtonLabel =
+    interactionTarget?.type === 'crate' ? 'Smash' :
+    interactionTarget?.type === 'object' ? 'Inspect' :
+    'Talk';
 
   if (sceneConfig.layout === 'vn') {
     return (

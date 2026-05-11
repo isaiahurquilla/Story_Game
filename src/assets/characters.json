@@ -17,5 +17,13 @@
   "Mechanic": {
     "name": "Mechanic",
     "portrait": "mechanic_image"
+  },
+  "wraith_01": {
+    "name": "Wraith",
+    "portrait": "wraith_01_image"
+  },
+  "wraith_03": {
+    "name": "Elder Wraith",
+    "portrait": "wraith_03_image"
   }
 }

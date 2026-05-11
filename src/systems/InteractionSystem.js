@@ -14,14 +14,14 @@ export const getNearbyNpc = ({ playerPos, playerSize, npcs }) => {
 
 export const getNearbyObject = ({ playerPos, playerSize, objects }) => {
   const found = objects.find((item) => {
-    if (!item.interactionNode) return false;
+    if (!item.interactionNode && item.type !== 'crate') return false;
 
     const targetX = item.x + (item.width || 0) / 2;
     const targetY = item.y + (item.height || 0) / 2;
     return isNearTarget(playerPos, playerSize, targetX, targetY, 110);
   });
 
-  return found ? { ...found, type: 'object' } : null;
+  return found ? { ...found, type: found.type || 'object' } : null;
 };
 
 export const getTouchedExit = ({ playerPos, playerSize, exits }) => {

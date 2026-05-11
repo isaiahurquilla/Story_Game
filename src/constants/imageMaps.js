@@ -5,8 +5,12 @@ export const NPC_PORTRAIT_MAP = {
   dude_image: require('../assets/sprites/Dude_Monster/Dude_Monster.png'),
   pink_image: require('../assets/sprites/Pink_Monster/Pink_Monster.png'),
   owlet_image: require('../assets/sprites/Owlet_Monster/Owlet_Monster.png'),
-  mechanic_image: require('../assets/sprites/Mechanic.png'),
-  Mechanic: require('../assets/sprites/Mechanic.png'),
+  mechanic_image: require('../assets/sprites/Mechanic/PNG Sequences/Idle/Wraith_02_Idle_001.png'),
+  Mechanic: require('../assets/sprites/Mechanic/PNG Sequences/Idle/Wraith_02_Idle_001.png'),
+  wraith_01_image: require('../assets/sprites/Wraith_01/PNG Sequences/Idle/Wraith_01_Idle_001.png'),
+  wraith_01: require('../assets/sprites/Wraith_01/PNG Sequences/Idle/Wraith_01_Idle_001.png'),
+  wraith_03_image: require('../assets/sprites/Wraith_03/PNG Sequences/Idle/Wraith_03_Idle_001.png'),
+  wraith_03: require('../assets/sprites/Wraith_03/PNG Sequences/Idle/Wraith_03_Idle_001.png'),
 };
 
 export const OBJECT_IMAGE_MAP = {
@@ -17,6 +21,7 @@ export const OBJECT_IMAGE_MAP = {
   'Building 06.png': require('../assets/images/Building 06.png'),
   'Building 07.png': require('../assets/images/Building 07.png'),
   'KeyPurple.png': require('../assets/sprites/Gear/KeyPurple.png'),
+  'purple_gear_sheet.png': require('../assets/sprites/Gear/purple_gear_sheet.png'),
 };
 
 // Add ship_burn entry here once src/assets/sprites/Ship/ship_burn.png is saved:
@@ -45,5 +50,23 @@ export const ANIMATED_OBJECT_MAP = {
     firstFrame: 1,
     lastFrame: 1,
     speedMs: 200,
+  },
+  crate_intact: {
+    source: require('../assets/sprites/Gear/DestroyableObjects.png'),
+    totalFrames: 7,
+    rowCount: 13,
+    row: 2,
+    firstFrame: 0,
+    lastFrame: 2,
+    speedMs: 400,
+  },
+  crate_explode: {
+    source: require('../assets/sprites/Gear/DestroyableObjects.png'),
+    totalFrames: 7,
+    rowCount: 13,
+    row: 3,
+    firstFrame: 3,
+    lastFrame: 6,
+    speedMs: 100,
   },
 };
