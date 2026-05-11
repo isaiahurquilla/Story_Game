@@ -168,7 +168,7 @@ Other contributions include shared assets and story writing documents.
 
   - Nebo Paul: 35+ commits, 12 pull requests, 6 features.
     Major contributions: Started visual novel components, JSON structure for characters/scenes, UI polish, managed meetings, documentation, and Trello board.
-  - Isaiah Urquilla: 25+ commits, 10 pull requests, 7 features.
+  - Isaiah Urquilla: 30+ commits, 10 pull requests, 7 features.
     Major contributions: Created overworld scene logic, overworld dialog logic, main menu, player movement, animations, gathered assets, and story writing.
   - Joshua Williams: 20+ commits, 3 pull requests, 6 features.
     Major contributions: Created backend connection, Async storage hook, profile logic, save/load logic, currency system, gathered assets, and story writing.
