@@ -1,0 +1,17 @@
+{
+  "start": {
+    "character": "Mechanic",
+    "txt": "You're back so soon? I thought you were gonna go look for parts.",
+    "next": "playerstart"
+  },
+  "playerstart": {
+    "character": "player",
+    "txt": "*hands over gears* I found all the parts you needed. Can you help me fix my ship now?",
+    "next": "Mechanic_response"
+  },
+  "Mechanic_response": {
+    "character": "Mechanic",
+    "txt": "I suppose I did make that deal with you. Take me to this ship of yours and I'll see what I can do.",
+    "next": "scene8"
+  }
+}

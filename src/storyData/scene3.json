@@ -14,27 +14,32 @@
   },
   "fine": {
     "character": "pink",
-    "txt": "Good! I was worried the crash would be too much for us.",
+    "txt": "Good! I was worried you would be hurt. Then who would take the blame for crashing the ship? Haha!",
     "next": "fine2"
   },
   "fine2": {
     "character": "pink",
-    "txt": "I'm glad you were able to steer away from the larger trees, haha!",
+    "txt": "It's a good thing we got away from the crash site. Don't want to be around if the ship decides to blow up or something.",
+    "next": "fine3"
+  },
+  "fine3": {
+    "character": "pink",
+    "txt": "We do need to find a way to fix the ship though...",
     "next": "anyway"
   },
   "what": {
     "character": "pink",
-    "txt": "...?",
+    "txt": "Seems like the engine took a hit.",
     "next": "what2"
   },
   "what2": {
     "character": "pink",
-    "txt": "Oh, it was the engine.. it took too much damage..",
+    "txt": "I think that's what caused the crash.",
     "next": "what3"
   },
   "what3": {
     "character": "pink",
-    "txt": "I thought it was sturdier than that. I'm just glad you were driving!",
+    "txt": "We need to stay away from the ship until we can fix it. It might not be safe here.",
     "next": "anyway"
   },
   "anyway": {

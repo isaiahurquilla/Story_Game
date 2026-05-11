@@ -1,6 +1,7 @@
 import { Pressable, Text, View, StyleSheet } from 'react-native';
 
 const PlayerChoice = ({ choices = [], onSelect, variant = 'default' }) => {
+  // Three visual themes matching DialogBox: default / vn / overlay
   const variantStyles = {
     default: {
       container: styles.defaultContainer,
@@ -21,6 +22,7 @@ const PlayerChoice = ({ choices = [], onSelect, variant = 'default' }) => {
 
   const palette = variantStyles[variant] || variantStyles.default;
 
+  // One button per choice; passes (nextNodeId, label, cost) to onSelect
   return (
     <View style={[styles.container, palette.container]}>
       {choices.map((choice, index) => (

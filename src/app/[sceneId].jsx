@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import WorldScene from '../screens/WorldScene';
 
+// Dynamic Expo Router route — unwraps sceneId/profileId/mode from URL params and renders WorldScene
 const SceneRoute = () => {
   const router = useRouter();
   const { profileId, mode, sceneId } = useLocalSearchParams();

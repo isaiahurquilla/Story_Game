@@ -1,5 +1,6 @@
 import { clamp } from './PlayerController';
 
+// Returns the world-space scroll offset that keeps the player centered in the viewport
 export const getCameraPosition = ({
   playerPos,
   playerSize,

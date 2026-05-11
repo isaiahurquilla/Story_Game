@@ -1,3 +1,4 @@
+// Derives the selectable scene list from storyMap keys; used by the menu chapter picker
 import storyMap from './storyMap';
 
 const toLabel = (key) =>

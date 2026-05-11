@@ -1,0 +1,53 @@
+{
+  "world": {
+    "width": 2200,
+    "height": 900,
+    "theme": "ship_return"
+  },
+  "spawn": {
+    "x": 1800,
+    "y": 620
+  },
+  "npcs": [
+    {
+      "id": "pink",
+      "x": 1950,
+      "y": 620,
+      "interactionNode": "pinkStart"
+    },
+    {
+      "id": "Mechanic",
+      "x": 100,
+      "y": 460,
+      "interactionNode": "start"
+    }
+  ],
+  "objects": [
+    {
+      "id": "ship",
+      "x": 120,
+      "y": 460,
+      "width": 160,
+      "height": 160,
+      "animationKey": "ship_burn"
+    },
+    {
+      "id": "shipGoal",
+      "x": 300,
+      "y": 620,
+      "width": 80,
+      "height": 80,
+      "visible": false
+    },
+    {
+      "id": "boardGoal",
+      "x": 200,
+      "y": 580,
+      "width": 80,
+      "height": 80,
+      "visible": false
+    }
+  ],
+  "colliders": [],
+  "exits": []
+}

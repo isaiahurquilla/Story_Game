@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+// AABB helper — kept here for potential scene-level overlap checks
 export const isColliding = (player, hotspot) => {
   return (
     player.x < hotspot.x + hotspot.width &&
@@ -10,6 +11,7 @@ export const isColliding = (player, hotspot) => {
   );
 };
 
+// Renders invisible pressable zones at given world coordinates; debug=true draws red outlines
 const SceneHotspots = ({ hotspots = [], onHotspotPress, debug = false }) => {
   return (
     <>

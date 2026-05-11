@@ -23,6 +23,7 @@ export default function Index() {
     });
   };
 
+  // Load saved profiles from AsyncStorage on mount
   useEffect(() => {
     const getProfiles = async () => {
       const savedList = await loadProfiles();
@@ -31,6 +32,7 @@ export default function Index() {
     getProfiles();
   }, []);
 
+  // Create a new profile and navigate straight to the menu
   const handleCreateProfile = async () => {
     if (!name.trim()) return;
     const updatedList = await saveProfile(name);
@@ -48,6 +50,7 @@ export default function Index() {
     setProfiles(updatedList);
   };
 
+  // Profile card rendered in the existing tales list
   const renderProfile = (item) => (
     <View key={item.id} style={styles.profileCard}>
       <View style={styles.profileBadge}>

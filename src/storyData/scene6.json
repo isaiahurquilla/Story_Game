@@ -62,7 +62,7 @@
   },
   "wraith03_parts": {
     "character": "wraith_03",
-    "txt": "I thought so. There are a few supply crates left in town. The devils left those at least. Help yourself to them.",
+    "txt": "I thought so. There are a few supply crates left in town. Help yourself to them.",
     "next": "wraith03_end"
   },
   "wraith03_home": {
@@ -79,6 +79,13 @@
   "foundGear": {
     "character": "player",
     "txt": "Found one!",
+    "next": "end"
+  },
+  "foundCat": {
+    "character": "pink",
+    "txt": "What is this creature?! Let's get out of here",
+    "effect": "shake",
+    "durationMs": 2000,
     "next": "end"
   }
 }

@@ -68,6 +68,76 @@
       "y": 660,
       "width": 128,
       "height": 128
+    },
+    {
+      "id": "crate_5",
+      "type": "crate",
+      "animationKey": "crate_intact",
+      "showAfterAll": ["crate_1", "crate_2", "crate_3", "crate_4"],
+      "x": 750,
+      "y": 400,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "id": "gear_1",
+      "type": "currency",
+      "x": 250,
+      "y": 680,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_2",
+      "type": "currency",
+      "x": 580,
+      "y": 650,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_3",
+      "type": "currency",
+      "x": 1050,
+      "y": 700,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_4",
+      "type": "currency",
+      "x": 1500,
+      "y": 680,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_5",
+      "type": "currency",
+      "x": 1820,
+      "y": 720,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
+    },
+    {
+      "id": "gear_6",
+      "type": "currency",
+      "x": 2150,
+      "y": 650,
+      "width": 48,
+      "height": 48,
+      "animationKey": "coin",
+      "amount": 10
     }
   ],
   "colliders": [
@@ -83,11 +153,12 @@
   "exits": [
     {
       "id": "exitLeft",
+      "showAfterAll": ["crate_1", "crate_2", "crate_3", "crate_4"],
       "x": 0,
       "y": 500,
       "width": 50,
       "height": 200,
-      "targetScene": "scene5"
+      "targetScene": "scene7"
     }
   ]
 }

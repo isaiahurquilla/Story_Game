@@ -1,3 +1,4 @@
+// AABB overlap test — true when two rectangles intersect
 export const rectsOverlap = (a, b) => {
   return (
     a.x < b.x + b.width &&
@@ -7,6 +8,7 @@ export const rectsOverlap = (a, b) => {
   );
 };
 
+// Clamps the attempted player position to world bounds, then blocks it if it overlaps a collider
 export const applyCollision = ({
   nextPos,
   playerSize,

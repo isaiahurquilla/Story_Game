@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
+// Small floating label shown at the bottom of the screen when the player is near an interactable target
 const InteractPrompt = ({ visible, text = 'Press E to interact' }) => {
   if (!visible) return null;
 
